@@ -269,6 +269,7 @@
         let sourceImage = null;
         let tesseractWorker = null;
         let textCheckTimeout = null;
+        const MIN_TEXT_CONFIDENCE = 75;
         
         const state = {
             fitMode: 'contain', // 'contain' or 'cover'
@@ -607,12 +608,12 @@
                 
                 try {
                     const ret = await tesseractWorker.recognize(ocrCanvas);
-                    const textFound = ret.data.text.trim();
+                    const textFound = ret.data.words.some(({ text, confidence }) => {
+                        const cleanText = text.replace(/[^a-zA-Z0-9]/g, '');
+                        return cleanText.length > 3 && confidence >= MIN_TEXT_CONFIDENCE;
+                    });
                     
-                    // Filter out noise common in 3D print photos (single letters, weird symbols)
-                    const cleanText = textFound.replace(/[^a-zA-Z0-9]/g, '');
-                    
-                    if (cleanText.length > 3) {
+                    if (textFound) {
                         // Potential Text detected!
                         DOM.snapmakerStatus.className = "absolute bottom-0 left-0 w-full p-2 text-xs font-semibold flex items-center justify-center gap-2 bg-red-900 text-red-200 h-10";
                         DOM.snapmakerStatus.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400 text-base"></i> Text Detected (Violates Snapmaker Rules)`;
