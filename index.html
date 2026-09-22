@@ -216,6 +216,14 @@
                         </div>
                         <input type="range" id="bgBlur" min="0" max="50" value="20" class="w-full">
                     </div>
+
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Edge Softness</span>
+                            <span id="edgeSoftnessVal">0px</span>
+                        </div>
+                        <input type="range" id="edgeSoftness" min="0" max="100" value="0" class="w-full">
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-5 border-t border-gray-800 pt-5">
@@ -351,6 +359,7 @@
             bgGradientDirection: 'diagonal',
             bgTexture: 'texture_dot',
             blurVal: 20,
+            edgeSoftness: 0,
             zoom: 1.0,
             panX: 0,
             panY: 0,
@@ -391,6 +400,8 @@
             bgBlurWrap: document.getElementById('bgBlurWrap'),
             bgBlur: document.getElementById('bgBlur'),
             blurValDisplay: document.getElementById('blurVal'),
+            edgeSoftness: document.getElementById('edgeSoftness'),
+            edgeSoftnessValDisplay: document.getElementById('edgeSoftnessVal'),
             zoomCtrl: document.getElementById('zoomCtrl'),
             zoomValDisplay: document.getElementById('zoomVal'),
             panXCtrl: document.getElementById('panXCtrl'),
@@ -461,6 +472,11 @@
                 DOM.blurValDisplay.textContent = state.blurVal + 'px';
                 renderAll(); 
             });
+            DOM.edgeSoftness.addEventListener('input', (e) => {
+                state.edgeSoftness = parseInt(e.target.value);
+                DOM.edgeSoftnessValDisplay.textContent = state.edgeSoftness + 'px';
+                renderAll();
+            });
 
             DOM.zoomCtrl.addEventListener('input', (e) => {
                 state.zoom = parseFloat(e.target.value);
@@ -529,10 +545,12 @@
             state.panX = 0;
             state.panY = 0;
             state.blurVal = 20;
+            state.edgeSoftness = 0;
             
             DOM.zoomCtrl.value = 1; DOM.zoomValDisplay.textContent = '1.0x';
             syncPanControls();
             DOM.bgBlur.value = 20; DOM.blurValDisplay.textContent = '20px';
+            DOM.edgeSoftness.value = 0; DOM.edgeSoftnessValDisplay.textContent = '0px';
             
             renderAll();
         }
@@ -789,7 +807,36 @@
             }
 
             // Draw the main foreground image
-            ctx.drawImage(sourceImage, x, y, scaledW, scaledH);
+            if (state.fitMode === 'contain' && state.edgeSoftness > 0) {
+                const edgeSoftness = Math.min(state.edgeSoftness, scaledW / 2, scaledH / 2);
+                const foregroundCanvas = document.createElement('canvas');
+                foregroundCanvas.width = cw;
+                foregroundCanvas.height = ch;
+                const foregroundCtx = foregroundCanvas.getContext('2d');
+
+                foregroundCtx.drawImage(sourceImage, x, y, scaledW, scaledH);
+                foregroundCtx.globalCompositeOperation = 'destination-in';
+
+                const horizontalMask = foregroundCtx.createLinearGradient(x, 0, x + scaledW, 0);
+                horizontalMask.addColorStop(0, 'transparent');
+                horizontalMask.addColorStop(edgeSoftness / scaledW, 'black');
+                horizontalMask.addColorStop(1 - edgeSoftness / scaledW, 'black');
+                horizontalMask.addColorStop(1, 'transparent');
+                foregroundCtx.fillStyle = horizontalMask;
+                foregroundCtx.fillRect(x, y, scaledW, scaledH);
+
+                const verticalMask = foregroundCtx.createLinearGradient(0, y, 0, y + scaledH);
+                verticalMask.addColorStop(0, 'transparent');
+                verticalMask.addColorStop(edgeSoftness / scaledH, 'black');
+                verticalMask.addColorStop(1 - edgeSoftness / scaledH, 'black');
+                verticalMask.addColorStop(1, 'transparent');
+                foregroundCtx.fillStyle = verticalMask;
+                foregroundCtx.fillRect(x, y, scaledW, scaledH);
+
+                ctx.drawImage(foregroundCanvas, 0, 0);
+            } else {
+                ctx.drawImage(sourceImage, x, y, scaledW, scaledH);
+            }
         }
 
         function getImageScale(canvasWidth, canvasHeight) {
