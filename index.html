@@ -23,6 +23,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
+    <script data-goatcounter="https://layerlens.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -100,7 +103,7 @@
             <i class="fa-solid fa-crop-simple text-teal-500 text-2xl"></i>
             <p class="text-xl font-bold tracking-wide">LayerLens</p>
         </div>
-        <button id="btnDownloadHeader" class="hidden bg-teal-700 hover:bg-teal-600 text-white px-4 py-2 sm:px-5 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm sm:text-base">
+        <button id="btnDownloadHeader" data-goatcounter-click="download-zip" class="hidden bg-teal-700 hover:bg-teal-600 text-white px-4 py-2 sm:px-5 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm sm:text-base">
             <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Download Zip Bundle</span><span class="sm:hidden">Zip</span>
         </button>
     </header>
@@ -121,7 +124,7 @@
         </section>
 
         <!-- Upload Screen -->
-        <div id="uploadScreen" class="w-full max-w-3xl bg-gray-900 border-2 border-dashed border-gray-700 rounded-2xl p-8 sm:p-12 text-center transition-all hover:border-teal-500 cursor-pointer group flex flex-col items-center justify-center min-h-[400px]">
+        <div id="uploadScreen" data-goatcounter-click="upload-image" class="w-full max-w-3xl bg-gray-900 border-2 border-dashed border-gray-700 rounded-2xl p-8 sm:p-12 text-center transition-all hover:border-teal-500 cursor-pointer group flex flex-col items-center justify-center min-h-[400px]">
             <input type="file" id="fileInput" accept="image/*" class="hidden">
             <div class="bg-gray-800 p-6 rounded-full mb-6 group-hover:scale-110 group-hover:bg-teal-900/50 transition-all">
                 <i class="fa-solid fa-cloud-arrow-up text-5xl text-teal-400"></i>
@@ -284,7 +287,7 @@
                 </div>
 
                 <div class="mt-auto pt-6">
-                    <button id="btnUploadNew" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-sm transition-colors mb-2">
+                    <button id="btnUploadNew" data-goatcounter-click="upload-new-image" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-sm transition-colors mb-2">
                         <i class="fa-solid fa-image mr-2"></i> Choose Different Image
                     </button>
                 </div>
