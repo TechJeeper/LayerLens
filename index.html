@@ -131,6 +131,11 @@
                         <option value="color">Solid Color</option>
                         <option value="texture_dot">Dot Matrix Texture</option>
                         <option value="texture_line">Diagonal Lines</option>
+                        <option value="texture_grid">Technical Grid</option>
+                        <option value="texture_crosshatch">Crosshatch Texture</option>
+                        <option value="gradient_sunset">Sunset Gradient</option>
+                        <option value="gradient_ocean">Ocean Gradient</option>
+                        <option value="gradient_midnight">Midnight Gradient</option>
                     </select>
 
                     <div id="bgColorPickerWrap" class="hidden flex items-center justify-between">
@@ -273,7 +278,7 @@
         
         const state = {
             fitMode: 'contain', // 'contain' or 'cover'
-            bgType: 'blur', // 'blur', 'color', 'texture_dot', 'texture_line'
+            bgType: 'blur', // 'blur', 'color', texture, or gradient
             bgColor: '#111827',
             blurVal: 20,
             zoom: 1.0,
@@ -518,8 +523,52 @@
                 pCtx.moveTo(30, 50);
                 pCtx.lineTo(50, 30);
                 pCtx.stroke();
+            } else if (type === 'texture_grid') {
+                patCanvas.width = 32; patCanvas.height = 32;
+                pCtx.fillStyle = '#172033';
+                pCtx.fillRect(0, 0, 32, 32);
+                pCtx.strokeStyle = '#334155';
+                pCtx.lineWidth = 1;
+                pCtx.beginPath();
+                pCtx.moveTo(0, 0);
+                pCtx.lineTo(32, 0);
+                pCtx.moveTo(0, 0);
+                pCtx.lineTo(0, 32);
+                pCtx.stroke();
+            } else if (type === 'texture_crosshatch') {
+                patCanvas.width = 24; patCanvas.height = 24;
+                pCtx.fillStyle = '#1c1917';
+                pCtx.fillRect(0, 0, 24, 24);
+                pCtx.strokeStyle = '#57534e';
+                pCtx.lineWidth = 1;
+                pCtx.beginPath();
+                pCtx.moveTo(0, 24);
+                pCtx.lineTo(24, 0);
+                pCtx.moveTo(0, 0);
+                pCtx.lineTo(24, 24);
+                pCtx.stroke();
             }
             return ctx.createPattern(patCanvas, 'repeat');
+        }
+
+        function getGradient(ctx, type, width, height) {
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+
+            if (type === 'gradient_sunset') {
+                gradient.addColorStop(0, '#4c1d95');
+                gradient.addColorStop(0.5, '#db2777');
+                gradient.addColorStop(1, '#f97316');
+            } else if (type === 'gradient_ocean') {
+                gradient.addColorStop(0, '#0f172a');
+                gradient.addColorStop(0.5, '#0369a1');
+                gradient.addColorStop(1, '#2dd4bf');
+            } else {
+                gradient.addColorStop(0, '#020617');
+                gradient.addColorStop(0.5, '#172554');
+                gradient.addColorStop(1, '#312e81');
+            }
+
+            return gradient;
         }
 
         function renderCanvas(canvas, targetWidth, targetHeight) {
@@ -574,6 +623,9 @@
                     ctx.fillRect(0, 0, cw, ch);
                 } else if (state.bgType.startsWith('texture')) {
                     ctx.fillStyle = getTexturePattern(ctx, state.bgType);
+                    ctx.fillRect(0, 0, cw, ch);
+                } else if (state.bgType.startsWith('gradient')) {
+                    ctx.fillStyle = getGradient(ctx, state.bgType, cw, ch);
                     ctx.fillRect(0, 0, cw, ch);
                 }
             }
