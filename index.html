@@ -203,6 +203,9 @@
                             <option value="texture_line">Diagonal Lines</option>
                             <option value="texture_grid">Technical Grid</option>
                             <option value="texture_crosshatch">Crosshatch</option>
+                            <option value="texture_checkerboard">Checkerboard</option>
+                            <option value="texture_wave">Ocean Waves</option>
+                            <option value="texture_hex">Hexagon Grid</option>
                         </select>
                     </div>
 
@@ -667,6 +670,48 @@
                 pCtx.moveTo(0, 0);
                 pCtx.lineTo(24, 24);
                 pCtx.stroke();
+            } else if (type === 'texture_checkerboard') {
+                patCanvas.width = 32; patCanvas.height = 32;
+                pCtx.fillStyle = '#111827';
+                pCtx.fillRect(0, 0, 32, 32);
+                pCtx.fillStyle = '#1f2937';
+                pCtx.fillRect(0, 0, 16, 16);
+                pCtx.fillRect(16, 16, 16, 16);
+            } else if (type === 'texture_wave') {
+                patCanvas.width = 48; patCanvas.height = 24;
+                pCtx.fillStyle = '#0c4a6e';
+                pCtx.fillRect(0, 0, 48, 24);
+                pCtx.strokeStyle = '#38bdf8';
+                pCtx.lineWidth = 2;
+                pCtx.beginPath();
+                pCtx.moveTo(0, 6);
+                pCtx.quadraticCurveTo(12, 0, 24, 6);
+                pCtx.quadraticCurveTo(36, 12, 48, 6);
+                pCtx.moveTo(0, 18);
+                pCtx.quadraticCurveTo(12, 12, 24, 18);
+                pCtx.quadraticCurveTo(36, 24, 48, 18);
+                pCtx.stroke();
+            } else if (type === 'texture_hex') {
+                patCanvas.width = 36; patCanvas.height = 42;
+                pCtx.fillStyle = '#1e1b4b';
+                pCtx.fillRect(0, 0, 36, 42);
+                pCtx.strokeStyle = '#6366f1';
+                pCtx.lineWidth = 1;
+                for (let y = -21; y < 63; y += 21) {
+                    for (let x = -18; x < 54; x += 36) {
+                        const centerX = x + (Math.round((y + 21) / 21) % 2) * 18;
+                        pCtx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = Math.PI / 3 * i;
+                            const pointX = centerX + 12 * Math.cos(angle);
+                            const pointY = y + 12 * Math.sin(angle);
+                            if (i === 0) pCtx.moveTo(pointX, pointY);
+                            else pCtx.lineTo(pointX, pointY);
+                        }
+                        pCtx.closePath();
+                        pCtx.stroke();
+                    }
+                }
             }
             return ctx.createPattern(patCanvas, 'repeat');
         }
