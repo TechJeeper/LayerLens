@@ -162,18 +162,41 @@
                     <select id="bgType" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
                         <option value="blur">Blurred Original</option>
                         <option value="color">Solid Color</option>
-                        <option value="texture_dot">Dot Matrix Texture</option>
-                        <option value="texture_line">Diagonal Lines</option>
-                        <option value="texture_grid">Technical Grid</option>
-                        <option value="texture_crosshatch">Crosshatch Texture</option>
-                        <option value="gradient_sunset">Sunset Gradient</option>
-                        <option value="gradient_ocean">Ocean Gradient</option>
-                        <option value="gradient_midnight">Midnight Gradient</option>
+                        <option value="gradient">Gradient</option>
+                        <option value="texture">Texture</option>
                     </select>
 
                     <div id="bgColorPickerWrap" class="hidden flex items-center justify-between">
                         <span class="text-sm text-gray-400">Color</span>
                         <input type="color" id="bgColor" value="#111827" class="h-8 w-14 rounded cursor-pointer bg-transparent border-0 p-0">
+                    </div>
+
+                    <div id="bgGradientWrap" class="hidden flex flex-col gap-3">
+                        <div class="flex items-center justify-between">
+                            <label for="bgGradientStart" class="text-sm text-gray-400">Start Color</label>
+                            <input type="color" id="bgGradientStart" value="#4c1d95" class="h-8 w-14 rounded cursor-pointer bg-transparent border-0 p-0">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="bgGradientEnd" class="text-sm text-gray-400">End Color</label>
+                            <input type="color" id="bgGradientEnd" value="#f97316" class="h-8 w-14 rounded cursor-pointer bg-transparent border-0 p-0">
+                        </div>
+                        <label for="bgGradientDirection" class="text-sm text-gray-400">Direction</label>
+                        <select id="bgGradientDirection" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
+                            <option value="diagonal">Top left to bottom right</option>
+                            <option value="horizontal">Left to right</option>
+                            <option value="vertical">Top to bottom</option>
+                            <option value="diagonal-reverse">Bottom left to top right</option>
+                        </select>
+                    </div>
+
+                    <div id="bgTextureWrap" class="hidden flex flex-col gap-1">
+                        <label for="bgTexture" class="text-sm text-gray-400">Texture</label>
+                        <select id="bgTexture" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
+                            <option value="texture_dot">Dot Matrix</option>
+                            <option value="texture_line">Diagonal Lines</option>
+                            <option value="texture_grid">Technical Grid</option>
+                            <option value="texture_crosshatch">Crosshatch</option>
+                        </select>
                     </div>
 
                     <div id="bgBlurWrap" class="flex flex-col gap-1">
@@ -313,6 +336,10 @@
             fitMode: 'contain', // 'contain' or 'cover'
             bgType: 'blur', // 'blur', 'color', texture, or gradient
             bgColor: '#111827',
+            bgGradientStart: '#4c1d95',
+            bgGradientEnd: '#f97316',
+            bgGradientDirection: 'diagonal',
+            bgTexture: 'texture_dot',
             blurVal: 20,
             zoom: 1.0,
             panX: 0,
@@ -345,6 +372,12 @@
             bgType: document.getElementById('bgType'),
             bgColorPickerWrap: document.getElementById('bgColorPickerWrap'),
             bgColor: document.getElementById('bgColor'),
+            bgGradientWrap: document.getElementById('bgGradientWrap'),
+            bgGradientStart: document.getElementById('bgGradientStart'),
+            bgGradientEnd: document.getElementById('bgGradientEnd'),
+            bgGradientDirection: document.getElementById('bgGradientDirection'),
+            bgTextureWrap: document.getElementById('bgTextureWrap'),
+            bgTexture: document.getElementById('bgTexture'),
             bgBlurWrap: document.getElementById('bgBlurWrap'),
             bgBlur: document.getElementById('bgBlur'),
             blurValDisplay: document.getElementById('blurVal'),
@@ -408,6 +441,10 @@
                 renderAll();
             });
             DOM.bgColor.addEventListener('input', (e) => { state.bgColor = e.target.value; renderAll(); });
+            DOM.bgGradientStart.addEventListener('input', (e) => { state.bgGradientStart = e.target.value; renderAll(); });
+            DOM.bgGradientEnd.addEventListener('input', (e) => { state.bgGradientEnd = e.target.value; renderAll(); });
+            DOM.bgGradientDirection.addEventListener('change', (e) => { state.bgGradientDirection = e.target.value; renderAll(); });
+            DOM.bgTexture.addEventListener('change', (e) => { state.bgTexture = e.target.value; renderAll(); });
             DOM.bgBlur.addEventListener('input', (e) => { 
                 state.blurVal = parseInt(e.target.value); 
                 DOM.blurValDisplay.textContent = state.blurVal + 'px';
@@ -465,9 +502,13 @@
 
         function updateBgUI() {
             DOM.bgColorPickerWrap.classList.add('hidden');
+            DOM.bgGradientWrap.classList.add('hidden');
+            DOM.bgTextureWrap.classList.add('hidden');
             DOM.bgBlurWrap.classList.add('hidden');
             
             if (state.bgType === 'color') DOM.bgColorPickerWrap.classList.remove('hidden');
+            if (state.bgType === 'gradient') DOM.bgGradientWrap.classList.remove('hidden');
+            if (state.bgType === 'texture') DOM.bgTextureWrap.classList.remove('hidden');
             if (state.bgType === 'blur') DOM.bgBlurWrap.classList.remove('hidden');
         }
 
@@ -584,23 +625,24 @@
             return ctx.createPattern(patCanvas, 'repeat');
         }
 
-        function getGradient(ctx, type, width, height) {
-            const gradient = ctx.createLinearGradient(0, 0, width, height);
+        function getGradient(ctx, width, height) {
+            let x1 = 0;
+            let y1 = 0;
+            let x2 = width;
+            let y2 = height;
 
-            if (type === 'gradient_sunset') {
-                gradient.addColorStop(0, '#4c1d95');
-                gradient.addColorStop(0.5, '#db2777');
-                gradient.addColorStop(1, '#f97316');
-            } else if (type === 'gradient_ocean') {
-                gradient.addColorStop(0, '#0f172a');
-                gradient.addColorStop(0.5, '#0369a1');
-                gradient.addColorStop(1, '#2dd4bf');
-            } else {
-                gradient.addColorStop(0, '#020617');
-                gradient.addColorStop(0.5, '#172554');
-                gradient.addColorStop(1, '#312e81');
+            if (state.bgGradientDirection === 'horizontal') {
+                y2 = 0;
+            } else if (state.bgGradientDirection === 'vertical') {
+                x2 = 0;
+            } else if (state.bgGradientDirection === 'diagonal-reverse') {
+                y1 = height;
+                y2 = 0;
             }
 
+            const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+            gradient.addColorStop(0, state.bgGradientStart);
+            gradient.addColorStop(1, state.bgGradientEnd);
             return gradient;
         }
 
@@ -654,11 +696,11 @@
                 } else if (state.bgType === 'color') {
                     ctx.fillStyle = state.bgColor;
                     ctx.fillRect(0, 0, cw, ch);
-                } else if (state.bgType.startsWith('texture')) {
-                    ctx.fillStyle = getTexturePattern(ctx, state.bgType);
+                } else if (state.bgType === 'texture') {
+                    ctx.fillStyle = getTexturePattern(ctx, state.bgTexture);
                     ctx.fillRect(0, 0, cw, ch);
-                } else if (state.bgType.startsWith('gradient')) {
-                    ctx.fillStyle = getGradient(ctx, state.bgType, cw, ch);
+                } else if (state.bgType === 'gradient') {
+                    ctx.fillStyle = getGradient(ctx, cw, ch);
                     ctx.fillRect(0, 0, cw, ch);
                 }
             }
