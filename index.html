@@ -4,7 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Photo Optimizer</title>
+    <title>PrintCrop | 3D Model Photo Optimizer</title>
+    <meta name="description" content="Prepare one 3D model photo for Printables, MakerWorld, Thangs, and Snapmaker Spaces with crop, resize, background, and text-detection tools.">
+    <meta name="keywords" content="3D model photos, Printables, MakerWorld, Thangs, Snapmaker Spaces, image cropper, photo optimizer">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#030712">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PrintCrop | 3D Model Photo Optimizer">
+    <meta property="og:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, and Snapmaker Spaces.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PrintCrop | 3D Model Photo Optimizer">
+    <meta name="twitter:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, and Snapmaker Spaces.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -33,6 +43,16 @@
                     }
                 }
             }
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "PrintCrop",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Any",
+            "description": "A browser-based tool for preparing 3D model photos for Printables, MakerWorld, Thangs, and Snapmaker Spaces."
         }
     </script>
     <style>
@@ -79,8 +99,8 @@
     <header class="bg-gray-900 border-b border-gray-800 p-4 shadow-md z-10 flex justify-between items-center sticky top-0">
         <div class="flex items-center gap-3">
             <i class="fa-solid fa-crop-simple text-teal-500 text-2xl"></i>
-            <h1 class="text-xl font-bold tracking-wide hidden sm:block">Model Photo Optimizer</h1>
-            <h1 class="text-xl font-bold tracking-wide sm:hidden">Optimizer</h1>
+            <p class="text-xl font-bold tracking-wide hidden sm:block">Model Photo Optimizer</p>
+            <p class="text-xl font-bold tracking-wide sm:hidden">Optimizer</p>
         </div>
         <button id="btnDownloadHeader" class="hidden bg-teal-700 hover:bg-teal-600 text-white px-4 py-2 sm:px-5 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm sm:text-base">
             <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Download Zip Bundle</span><span class="sm:hidden">Zip</span>
@@ -88,7 +108,20 @@
     </header>
 
     <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 relative w-full max-w-[1600px] mx-auto">
-        
+        <section class="w-full max-w-4xl text-center pt-8 pb-10 sm:pt-14 sm:pb-12">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-teal-400 mb-4">One photo, every platform</p>
+            <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white">Perfect your 3D model photos for every listing.</h1>
+            <p class="max-w-2xl mx-auto mt-5 text-base sm:text-lg leading-relaxed text-gray-400">Upload a single image and create platform-ready versions for Printables, MakerWorld, Thangs, and Snapmaker Spaces. Crop, resize, adjust the background, and download every export in one ZIP.</p>
+            <div class="mt-7 flex flex-wrap justify-center gap-3 text-sm text-gray-300">
+                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-crop-simple text-teal-400 mr-2"></i>Smart crop &amp; fit</span>
+                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-wand-magic-sparkles text-teal-400 mr-2"></i>Custom backgrounds</span>
+                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-file-zipper text-teal-400 mr-2"></i>ZIP export</span>
+            </div>
+            <a href="#uploadScreen" class="inline-flex items-center gap-2 mt-8 bg-teal-700 hover:bg-teal-600 text-white px-5 py-3 rounded-lg font-semibold shadow-lg transition-colors">
+                Optimize a photo <i class="fa-solid fa-arrow-down"></i>
+            </a>
+        </section>
+
         <!-- Upload Screen -->
         <div id="uploadScreen" class="w-full max-w-3xl bg-gray-900 border-2 border-dashed border-gray-700 rounded-2xl p-8 sm:p-12 text-center transition-all hover:border-teal-500 cursor-pointer group flex flex-col items-center justify-center min-h-[400px]">
             <input type="file" id="fileInput" accept="image/*" class="hidden">
