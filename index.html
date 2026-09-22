@@ -147,7 +147,7 @@
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-semibold text-gray-300" for="canvas-reference">Crop reference</label>
-                        <span class="text-xs text-gray-500">Drag to reposition</span>
+                        <span class="text-xs text-gray-500">Drag to reposition (snaps near center)</span>
                     </div>
                     <canvas id="canvas-reference" width="800" height="600" aria-label="Draggable crop reference preview" class="w-full aspect-[4/3] rounded border border-gray-700 bg-black cursor-grab touch-none"></canvas>
                 </div>
@@ -578,6 +578,7 @@
 
         function setupReferenceDrag() {
             let dragStart = null;
+            const centerSnapThreshold = 2;
 
             DOM.referenceCanvas.addEventListener('pointerdown', (event) => {
                 if (!sourceImage) return;
@@ -593,8 +594,10 @@
                 const canvasDeltaY = (event.clientY - dragStart.y) * (DOM.referenceCanvas.height / rect.height);
                 const scale = getImageScale(DOM.referenceCanvas.width, DOM.referenceCanvas.height);
 
-                state.panX = Math.max(-100, Math.min(100, dragStart.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
-                state.panY = Math.max(-100, Math.min(100, dragStart.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
+                const panX = Math.max(-100, Math.min(100, dragStart.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
+                const panY = Math.max(-100, Math.min(100, dragStart.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
+                state.panX = Math.abs(panX) < centerSnapThreshold ? 0 : panX;
+                state.panY = Math.abs(panY) < centerSnapThreshold ? 0 : panY;
                 syncPanControls();
                 renderAll();
             });
