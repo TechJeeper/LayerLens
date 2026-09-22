@@ -220,6 +220,13 @@
                             </div>
                             <input type="range" id="bgTextureScale" min="0.5" max="3" step="0.1" value="1" class="w-full">
                         </div>
+                        <div class="mt-3 flex flex-col gap-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <label for="bgTextureBlur">Texture Blur</label>
+                                <span id="textureBlurVal">0px</span>
+                            </div>
+                            <input type="range" id="bgTextureBlur" min="0" max="50" value="0" class="w-full">
+                        </div>
                     </div>
 
                     <div id="bgBlurWrap" class="flex flex-col gap-1">
@@ -372,6 +379,7 @@
             bgGradientDirection: 'diagonal',
             bgTexture: 'texture_dot',
             bgTextureScale: 1,
+            bgTextureBlur: 0,
             blurVal: 20,
             edgeSoftness: 0,
             zoom: 1.0,
@@ -413,6 +421,8 @@
             bgTexture: document.getElementById('bgTexture'),
             bgTextureScale: document.getElementById('bgTextureScale'),
             textureScaleValDisplay: document.getElementById('textureScaleVal'),
+            bgTextureBlur: document.getElementById('bgTextureBlur'),
+            textureBlurValDisplay: document.getElementById('textureBlurVal'),
             bgBlurWrap: document.getElementById('bgBlurWrap'),
             bgBlur: document.getElementById('bgBlur'),
             blurValDisplay: document.getElementById('blurVal'),
@@ -486,6 +496,11 @@
             DOM.bgTextureScale.addEventListener('input', (e) => {
                 state.bgTextureScale = parseFloat(e.target.value);
                 DOM.textureScaleValDisplay.textContent = state.bgTextureScale.toFixed(1) + 'x';
+                renderAll();
+            });
+            DOM.bgTextureBlur.addEventListener('input', (e) => {
+                state.bgTextureBlur = parseInt(e.target.value);
+                DOM.textureBlurValDisplay.textContent = state.bgTextureBlur + 'px';
                 renderAll();
             });
             DOM.bgBlur.addEventListener('input', (e) => { 
@@ -565,11 +580,13 @@
             state.zoom = 1.0;
             state.panX = 0;
             state.panY = 0;
+            state.bgTextureBlur = 0;
             state.blurVal = 20;
             state.edgeSoftness = 0;
             
             DOM.zoomCtrl.value = 1; DOM.zoomValDisplay.textContent = '1.0x';
             syncPanControls();
+            DOM.bgTextureBlur.value = 0; DOM.textureBlurValDisplay.textContent = '0px';
             DOM.bgBlur.value = 20; DOM.blurValDisplay.textContent = '20px';
             DOM.edgeSoftness.value = 0; DOM.edgeSoftnessValDisplay.textContent = '0px';
             
@@ -908,8 +925,11 @@
                     ctx.fillStyle = state.bgColor;
                     ctx.fillRect(0, 0, cw, ch);
                 } else if (state.bgType === 'texture') {
+                    ctx.save();
+                    ctx.filter = `blur(${state.bgTextureBlur}px)`;
                     ctx.fillStyle = getTexturePattern(ctx, state.bgTexture);
                     ctx.fillRect(0, 0, cw, ch);
+                    ctx.restore();
                 } else if (state.bgType === 'gradient') {
                     ctx.fillStyle = getGradient(ctx, cw, ch);
                     ctx.fillRect(0, 0, cw, ch);
