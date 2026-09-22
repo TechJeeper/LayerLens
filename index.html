@@ -145,6 +145,14 @@
                     <button id="btnReset" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 transition-colors">Reset</button>
                 </div>
 
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-gray-300" for="canvas-reference">Crop reference</label>
+                        <span class="text-xs text-gray-500">Drag to reposition</span>
+                    </div>
+                    <canvas id="canvas-reference" width="800" height="600" aria-label="Draggable crop reference preview" class="w-full aspect-[4/3] rounded border border-gray-700 bg-black cursor-grab touch-none"></canvas>
+                </div>
+
                 <!-- Global Fit Mode -->
                 <div class="flex flex-col gap-2">
                     <label class="text-sm font-semibold text-gray-300">Image Fit</label>
@@ -384,6 +392,7 @@
             zoomValDisplay: document.getElementById('zoomVal'),
             panXCtrl: document.getElementById('panXCtrl'),
             panYCtrl: document.getElementById('panYCtrl'),
+            referenceCanvas: document.getElementById('canvas-reference'),
             btnReset: document.getElementById('btnReset'),
             btnUploadNew: document.getElementById('btnUploadNew'),
             btnDownloadHeader: document.getElementById('btnDownloadHeader'),
@@ -457,6 +466,7 @@
             });
             DOM.panXCtrl.addEventListener('input', (e) => { state.panX = parseInt(e.target.value); renderAll(); });
             DOM.panYCtrl.addEventListener('input', (e) => { state.panY = parseInt(e.target.value); renderAll(); });
+            setupReferenceDrag();
 
             DOM.btnReset.addEventListener('click', resetControls);
             DOM.btnUploadNew.addEventListener('click', () => {
@@ -518,11 +528,46 @@
             state.blurVal = 20;
             
             DOM.zoomCtrl.value = 1; DOM.zoomValDisplay.textContent = '1.0x';
-            DOM.panXCtrl.value = 0;
-            DOM.panYCtrl.value = 0;
+            syncPanControls();
             DOM.bgBlur.value = 20; DOM.blurValDisplay.textContent = '20px';
             
             renderAll();
+        }
+
+        function setupReferenceDrag() {
+            let dragStart = null;
+
+            DOM.referenceCanvas.addEventListener('pointerdown', (event) => {
+                if (!sourceImage) return;
+                dragStart = { x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
+                DOM.referenceCanvas.setPointerCapture(event.pointerId);
+                DOM.referenceCanvas.classList.replace('cursor-grab', 'cursor-grabbing');
+            });
+
+            DOM.referenceCanvas.addEventListener('pointermove', (event) => {
+                if (!dragStart) return;
+                const rect = DOM.referenceCanvas.getBoundingClientRect();
+                const canvasDeltaX = (event.clientX - dragStart.x) * (DOM.referenceCanvas.width / rect.width);
+                const canvasDeltaY = (event.clientY - dragStart.y) * (DOM.referenceCanvas.height / rect.height);
+                const scale = getImageScale(DOM.referenceCanvas.width, DOM.referenceCanvas.height);
+
+                state.panX = Math.max(-100, Math.min(100, dragStart.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
+                state.panY = Math.max(-100, Math.min(100, dragStart.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
+                syncPanControls();
+                renderAll();
+            });
+
+            const finishDrag = () => {
+                dragStart = null;
+                DOM.referenceCanvas.classList.replace('cursor-grabbing', 'cursor-grab');
+            };
+            DOM.referenceCanvas.addEventListener('pointerup', finishDrag);
+            DOM.referenceCanvas.addEventListener('pointercancel', finishDrag);
+        }
+
+        function syncPanControls() {
+            DOM.panXCtrl.value = state.panX;
+            DOM.panYCtrl.value = state.panY;
         }
 
         function showToast(msg, isSuccess=true) {
@@ -557,6 +602,8 @@
 
         function renderAll() {
             if (!sourceImage) return;
+
+            renderCanvas(DOM.referenceCanvas, 800, 600);
 
             // Iterate over each target platform and render its canvas
             getPlatforms().forEach(platform => {
@@ -659,15 +706,7 @@
             ctx.clearRect(0, 0, cw, ch);
 
             // Calculate scale based on chosen fit mode
-            let scale;
-            if (state.fitMode === 'contain') {
-                scale = Math.min(cw / iw, ch / ih);
-            } else { // cover mode
-                scale = Math.max(cw / iw, ch / ih);
-            }
-
-            // Apply manual zoom modifier
-            scale *= state.zoom;
+            const scale = getImageScale(cw, ch);
 
             const scaledW = iw * scale;
             const scaledH = ih * scale;
@@ -706,6 +745,13 @@
 
             // Draw the main foreground image
             ctx.drawImage(sourceImage, x, y, scaledW, scaledH);
+        }
+
+        function getImageScale(canvasWidth, canvasHeight) {
+            const baseScale = state.fitMode === 'contain'
+                ? Math.min(canvasWidth / sourceImage.width, canvasHeight / sourceImage.height)
+                : Math.max(canvasWidth / sourceImage.width, canvasHeight / sourceImage.height);
+            return baseScale * state.zoom;
         }
 
         function triggerTextCheck(sourceCanvas) {
