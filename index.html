@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LayerLens | 3D Model Photo Optimizer</title>
-    <meta name="description" content="Prepare one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D with crop, resize, custom backgrounds, and text-detection tools.">
+    <meta name="description" content="Prepare 3D model photos for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D with batch crop, brand kits, custom backgrounds, and text-detection tools.">
     <meta name="keywords" content="LayerLens, 3D model photos, Printables, MakerWorld, Thangs, Snapmaker Spaces, Cults3D, image cropper, photo optimizer, STL listing photos">
     <meta name="author" content="TechJeeper Designs">
     <meta name="creator" content="TechJeeper Designs">
@@ -36,7 +36,7 @@
     <meta property="og:site_name" content="LayerLens">
     <meta property="og:url" content="https://layerlens.techjeeper.com/">
     <meta property="og:title" content="LayerLens | 3D Model Photo Optimizer">
-    <meta property="og:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.">
+    <meta property="og:description" content="Optimize 3D model photos for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.">
     <meta property="og:image" content="https://layerlens.techjeeper.com/og-image.png">
     <meta property="og:image:secure_url" content="https://layerlens.techjeeper.com/og-image.png">
     <meta property="og:image:type" content="image/png">
@@ -47,7 +47,7 @@
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="LayerLens | 3D Model Photo Optimizer">
-    <meta name="twitter:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.">
+    <meta name="twitter:description" content="Optimize 3D model photos for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.">
     <meta name="twitter:image" content="https://layerlens.techjeeper.com/og-image.png">
     <meta name="twitter:image:alt" content="LayerLens — 3D model photo optimizer for marketplace listings">
 
@@ -166,7 +166,7 @@
             background: #4b5563;
             border-radius: 2px;
         }
-        
+
         /* Loading Spinner Animation */
         .spinner {
             border: 3px solid rgba(255,255,255,0.1);
@@ -176,63 +176,139 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .filmstrip-item.active {
+            outline: 2px solid #0f766e;
+            outline-offset: 2px;
+        }
+
+        .drop-active {
+            border-color: #14b8a6 !important;
+            background-color: rgba(15, 118, 110, 0.15);
+        }
     </style>
+    <script src="/app.js" defer></script>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col">
 
-    <header class="bg-gray-900 border-b border-gray-800 p-4 shadow-md z-10 flex justify-between items-center sticky top-0">
-        <div class="flex items-center gap-3">
-            <img src="/favicon.svg" alt="" width="32" height="32" class="w-8 h-8 rounded-lg" decoding="async">
-            <p class="text-xl font-bold tracking-wide">LayerLens</p>
+    <header class="bg-gray-900 border-b border-gray-800 p-3 sm:p-4 shadow-md z-10 sticky top-0">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <img src="/favicon.svg" alt="" width="32" height="32" class="w-8 h-8 rounded-lg shrink-0" decoding="async">
+                <p class="text-xl font-bold tracking-wide">LayerLens</p>
+                <label class="hidden sm:flex items-center gap-2 ml-2 min-w-0">
+                    <span class="text-xs text-gray-500 shrink-0">Project</span>
+                    <input id="projectName" type="text" value="Untitled Project" maxlength="80"
+                        class="bg-gray-950 border border-gray-700 rounded-lg px-2.5 py-1.5 text-sm text-white outline-none focus:border-teal-500 w-40 lg:w-56 truncate"
+                        aria-label="Project name">
+                </label>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap justify-end">
+                <button id="btnSaveProject" type="button" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors" title="Save project">
+                    <i class="fa-solid fa-floppy-disk"></i><span class="hidden sm:inline ml-2">Save</span>
+                </button>
+                <button id="btnLoadProject" type="button" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors" title="Load project">
+                    <i class="fa-solid fa-folder-open"></i><span class="hidden sm:inline ml-2">Load</span>
+                </button>
+                <button id="btnExportProjectJson" type="button" class="hidden sm:inline-flex bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors items-center" title="Download project JSON">
+                    <i class="fa-solid fa-file-export"></i><span class="ml-2">JSON</span>
+                </button>
+                <button id="btnImportProjectJson" type="button" class="hidden sm:inline-flex bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm transition-colors items-center" title="Upload project JSON">
+                    <i class="fa-solid fa-file-import"></i><span class="ml-2">Import</span>
+                </button>
+                <input type="file" id="projectJsonInput" accept="application/json,.json" class="hidden">
+                <button id="btnDownloadHeader" data-goatcounter-click="download-zip" class="hidden bg-teal-700 hover:bg-teal-600 text-white px-4 py-2 sm:px-5 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm sm:text-base">
+                    <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Download Zip Bundle</span><span class="sm:hidden">Zip</span>
+                </button>
+            </div>
         </div>
-        <button id="btnDownloadHeader" data-goatcounter-click="download-zip" class="hidden bg-teal-700 hover:bg-teal-600 text-white px-4 py-2 sm:px-5 rounded-lg font-semibold shadow-lg transition-all flex items-center gap-2 text-sm sm:text-base">
-            <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Download Zip Bundle</span><span class="sm:hidden">Zip</span>
-        </button>
+        <label class="sm:hidden flex items-center gap-2 mt-2 max-w-[1600px] mx-auto px-0">
+            <span class="text-xs text-gray-500 shrink-0">Project</span>
+            <input id="projectNameMobile" type="text" value="Untitled Project" maxlength="80"
+                class="flex-1 bg-gray-950 border border-gray-700 rounded-lg px-2.5 py-1.5 text-sm text-white outline-none focus:border-teal-500"
+                aria-label="Project name">
+        </label>
     </header>
 
     <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 relative w-full max-w-[1600px] mx-auto">
-        <section class="w-full max-w-4xl text-center pt-8 pb-10 sm:pt-14 sm:pb-12">
-            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-teal-400 mb-4">One photo, every platform</p>
+        <section id="heroSection" class="w-full max-w-4xl text-center pt-8 pb-10 sm:pt-14 sm:pb-12">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-teal-400 mb-4">Batch photos, every platform</p>
             <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white">Perfect your 3D model photos for every listing.</h1>
-            <p class="max-w-2xl mx-auto mt-5 text-base sm:text-lg leading-relaxed text-gray-400">Upload a single image and create platform-ready versions for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D. Crop, resize, adjust the background, and download every export in one ZIP.</p>
+            <p class="max-w-2xl mx-auto mt-5 text-base sm:text-lg leading-relaxed text-gray-400">Upload one or many images and create platform-ready versions for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D. Crop, brand, adjust color, and download every export in one ZIP.</p>
             <div class="mt-7 flex flex-wrap justify-center gap-3 text-sm text-gray-300">
-                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-crop-simple text-teal-400 mr-2"></i>Smart crop &amp; fit</span>
-                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-wand-magic-sparkles text-teal-400 mr-2"></i>Custom backgrounds</span>
+                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-images text-teal-400 mr-2"></i>Multi-image batches</span>
+                <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-wand-magic-sparkles text-teal-400 mr-2"></i>Brand kits &amp; watermarks</span>
                 <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-file-zipper text-teal-400 mr-2"></i>ZIP export</span>
             </div>
             <a href="#uploadScreen" class="inline-flex items-center gap-2 mt-8 bg-teal-700 hover:bg-teal-600 text-white px-5 py-3 rounded-lg font-semibold shadow-lg transition-colors">
-                Optimize a photo <i class="fa-solid fa-arrow-down"></i>
+                Optimize photos <i class="fa-solid fa-arrow-down"></i>
             </a>
         </section>
 
         <!-- Upload Screen -->
         <div id="uploadScreen" data-goatcounter-click="upload-image" class="w-full max-w-3xl bg-gray-900 border-2 border-dashed border-gray-700 rounded-2xl p-8 sm:p-12 text-center transition-all hover:border-teal-500 cursor-pointer group flex flex-col items-center justify-center min-h-[400px]">
-            <input type="file" id="fileInput" accept="image/*" class="hidden">
+            <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
             <div class="bg-gray-800 p-6 rounded-full mb-6 group-hover:scale-110 group-hover:bg-teal-900/50 transition-all">
                 <i class="fa-solid fa-cloud-arrow-up text-5xl text-teal-400"></i>
             </div>
-            <h2 class="text-xl sm:text-2xl font-bold mb-2">Upload your hero photo</h2>
-            <p class="text-gray-400 mb-6 text-sm sm:text-base">Drag and drop an image here, or click to browse.</p>
+            <h2 class="text-xl sm:text-2xl font-bold mb-2">Upload your listing photos</h2>
+            <p class="text-gray-400 mb-2 text-sm sm:text-base">Drag and drop images here, click to browse, or paste from clipboard.</p>
+            <p class="text-gray-500 mb-6 text-xs sm:text-sm">Select multiple files for a batch. First image becomes the hero by default.</p>
             <div class="text-xs sm:text-sm text-gray-500 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mt-4">
                 <span class="flex items-center justify-center gap-1"><i class="fa-solid fa-check text-green-500"></i> Auto-resizing</span>
-                <span class="flex items-center justify-center gap-1"><i class="fa-solid fa-check text-green-500"></i> Aspect Ratio Magic</span>
+                <span class="flex items-center justify-center gap-1"><i class="fa-solid fa-check text-green-500"></i> Per-image crop memory</span>
                 <span class="flex items-center justify-center gap-1"><i class="fa-solid fa-check text-green-500"></i> Text Detection (OCR)</span>
+            </div>
+            <div class="mt-6 flex flex-wrap justify-center gap-2">
+                <button type="button" id="btnLoadProjectUpload" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i class="fa-solid fa-folder-open mr-2"></i>Load saved project
+                </button>
+                <button type="button" id="btnImportProjectJsonUpload" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i class="fa-solid fa-file-import mr-2"></i>Import JSON
+                </button>
             </div>
         </div>
 
-        <div id="editorScreen" class="w-full h-full flex flex-col lg:flex-row gap-6 hidden">
-            
+        <div id="editorScreen" class="w-full h-full flex flex-col gap-4 hidden">
+
+            <!-- Filmstrip -->
+            <div id="filmstripBar" class="w-full bg-gray-900 rounded-xl border border-gray-800 p-3 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                <div class="flex items-center justify-between gap-2 shrink-0">
+                    <span class="text-sm font-semibold text-gray-300"><i class="fa-solid fa-film text-teal-400 mr-2"></i>Batch</span>
+                    <span id="batchCount" class="text-xs text-gray-500">0 images</span>
+                </div>
+                <div id="filmstrip" class="flex gap-2 overflow-x-auto flex-grow py-1 min-h-[72px] items-center"></div>
+                <div class="flex gap-2 shrink-0">
+                    <button type="button" id="btnAddImages" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors">
+                        <i class="fa-solid fa-plus mr-1"></i> Add
+                    </button>
+                    <button type="button" id="btnRemoveImage" class="bg-gray-800 hover:bg-red-900/40 border border-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors" title="Remove active image">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full flex flex-col lg:flex-row gap-6">
             <!-- Controls Sidebar -->
-            <aside class="w-full lg:w-80 bg-gray-900 rounded-xl border border-gray-800 p-5 flex flex-col gap-6 shadow-xl lg:overflow-y-auto lg:h-[calc(100vh-100px)] lg:sticky top-24 shrink-0">
+            <aside class="w-full lg:w-80 bg-gray-900 rounded-xl border border-gray-800 p-5 flex flex-col gap-6 shadow-xl lg:overflow-y-auto lg:h-[calc(100vh-140px)] lg:sticky top-28 shrink-0">
                 <div class="flex justify-between items-center border-b border-gray-800 pb-4">
                     <h3 class="text-lg font-bold"><i class="fa-solid fa-sliders text-teal-400 mr-2"></i> Adjustments</h3>
                     <button id="btnReset" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 transition-colors">Reset</button>
                 </div>
 
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-semibold text-gray-300" for="imageRole">Image role</label>
+                    <select id="imageRole" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
+                        <option value="hero">Hero</option>
+                        <option value="gallery">Gallery</option>
+                        <option value="detail">Detail</option>
+                    </select>
+                </div>
+
                 <div id="cropReferencePanel" class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-semibold text-gray-300" for="canvas-reference">Crop reference</label>
-                        <span class="text-xs text-gray-500">Drag to reposition (snaps near center)</span>
+                        <span class="text-xs text-gray-500">Drag to reposition</span>
                     </div>
                     <canvas id="canvas-reference" width="800" height="600" aria-label="Draggable crop reference preview" class="w-full aspect-[4/3] rounded border border-gray-700 bg-black cursor-grab touch-none"></canvas>
                 </div>
@@ -246,10 +322,14 @@
                     </div>
                 </div>
 
+                <button type="button" id="btnAutoCrop" class="w-full bg-teal-900/50 hover:bg-teal-800/60 border border-teal-800 text-teal-100 py-2 rounded-lg text-sm transition-colors">
+                    <i class="fa-solid fa-crosshairs mr-2"></i>Auto-crop subject
+                </button>
+
                 <!-- Background Settings (Only relevant for Contain) -->
                 <div id="bgSettingsPanel" class="flex flex-col gap-4 bg-gray-850 p-4 rounded-lg border border-gray-800">
                     <label class="text-sm font-semibold text-gray-300">Background Style</label>
-                    
+
                     <select id="bgType" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
                         <option value="blur">Blurred Original</option>
                         <option value="custom">Custom Image</option>
@@ -358,7 +438,7 @@
 
                 <div id="globalTransformPanel" class="flex flex-col gap-5 border-t border-gray-800 pt-5">
                     <label class="text-sm font-semibold text-gray-300">Transform Image</label>
-                    
+
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between text-xs text-gray-400">
                             <span>Zoom</span>
@@ -382,28 +462,153 @@
                     </div>
                 </div>
 
-                <div id="coverModeHint" class="hidden border-t border-gray-800 pt-5 text-sm text-gray-400 leading-relaxed">
-                    <p class="font-semibold text-gray-300 mb-1"><i class="fa-solid fa-crop text-teal-400 mr-2"></i>Per-platform crop</p>
-                    <p>Cover mode is on. Use each service card to zoom, drag to re-focus, and pan that export independently.</p>
+                <!-- Color / Lighting -->
+                <div class="flex flex-col gap-4 border-t border-gray-800 pt-5">
+                    <label class="text-sm font-semibold text-gray-300">Color &amp; lighting</label>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Exposure</span>
+                            <span id="exposureVal">0</span>
+                        </div>
+                        <input type="range" id="exposureCtrl" min="-50" max="50" value="0" class="w-full">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Contrast</span>
+                            <span id="contrastVal">0</span>
+                        </div>
+                        <input type="range" id="contrastCtrl" min="-50" max="50" value="0" class="w-full">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Temperature</span>
+                            <span id="temperatureVal">0</span>
+                        </div>
+                        <input type="range" id="temperatureCtrl" min="-50" max="50" value="0" class="w-full">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Vignette</span>
+                            <span id="vignetteVal">0</span>
+                        </div>
+                        <input type="range" id="vignetteCtrl" min="0" max="100" value="0" class="w-full">
+                    </div>
                 </div>
 
-                <div class="mt-auto pt-6">
-                    <button id="btnUploadNew" data-goatcounter-click="upload-new-image" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-sm transition-colors mb-2">
-                        <i class="fa-solid fa-image mr-2"></i> Choose Different Image
+                <!-- Platform presets / logo -->
+                <div class="flex flex-col gap-4 border-t border-gray-800 pt-5">
+                    <label class="text-sm font-semibold text-gray-300">Platform presets</label>
+                    <label class="flex items-center justify-between gap-3 text-sm text-gray-300 cursor-pointer">
+                        <span>Safe-margin overlay</span>
+                        <input type="checkbox" id="safeMarginToggle" class="w-4 h-4 accent-teal-600">
+                    </label>
+                    <div class="flex flex-col gap-2">
+                        <input type="file" id="logoInput" accept="image/*" class="hidden">
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btnLogoUpload" class="flex-1 bg-gray-950 hover:bg-gray-900 border border-gray-700 text-white py-2 px-3 rounded-lg text-sm transition-colors">
+                                <i class="fa-solid fa-stamp mr-2"></i>Logo watermark
+                            </button>
+                            <button type="button" id="btnClearLogo" class="hidden bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 py-2 px-3 rounded-lg text-sm transition-colors" title="Clear logo">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <p id="logoName" class="text-xs text-gray-500 truncate">No logo selected</p>
+                    </div>
+                    <div id="logoControls" class="hidden flex flex-col gap-3">
+                        <label for="logoPosition" class="text-xs text-gray-400">Position</label>
+                        <select id="logoPosition" class="bg-gray-950 border border-gray-700 text-sm rounded block w-full p-2.5 text-white outline-none">
+                            <option value="bottom-right">Bottom right</option>
+                            <option value="bottom-left">Bottom left</option>
+                            <option value="top-right">Top right</option>
+                            <option value="top-left">Top left</option>
+                            <option value="center">Center</option>
+                        </select>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Scale</span>
+                                <span id="logoScaleVal">15%</span>
+                            </div>
+                            <input type="range" id="logoScale" min="5" max="40" value="15" class="w-full">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Opacity</span>
+                                <span id="logoOpacityVal">70%</span>
+                            </div>
+                            <input type="range" id="logoOpacity" min="10" max="100" value="70" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Brand kit -->
+                <div class="flex flex-col gap-3 border-t border-gray-800 pt-5">
+                    <label class="text-sm font-semibold text-gray-300">Brand kit</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btnSaveBrandKit" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-xs transition-colors">
+                            <i class="fa-solid fa-bookmark mr-1"></i> Save kit
+                        </button>
+                        <button type="button" id="btnApplyBrandKit" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-xs transition-colors">
+                            <i class="fa-solid fa-paint-roller mr-1"></i> Apply kit
+                        </button>
+                    </div>
+                </div>
+
+                <div id="coverModeHint" class="hidden border-t border-gray-800 pt-5 text-sm text-gray-400 leading-relaxed">
+                    <p class="font-semibold text-gray-300 mb-1"><i class="fa-solid fa-crop text-teal-400 mr-2"></i>Per-platform crop</p>
+                    <p>Cover mode is on. Use each service card to zoom, drag to re-focus, and pan that export independently. Crops are remembered per image.</p>
+                </div>
+
+                <!-- Listing checklist -->
+                <div class="flex flex-col gap-3 border-t border-gray-800 pt-5">
+                    <label class="text-sm font-semibold text-gray-300"><i class="fa-solid fa-list-check text-teal-400 mr-2"></i>Listing checklist</label>
+                    <ul id="listingChecklist" class="text-xs text-gray-400 space-y-2 leading-relaxed">
+                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Printables:</strong> Prefer clean 4:3 hero; first gallery shot sells the model.</span></li>
+                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">MakerWorld:</strong> Landscape or portrait 4:3/3:4; keep subject large in frame.</span></li>
+                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Thangs:</strong> Tall 9:11 crops; avoid tiny subjects.</span></li>
+                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Snapmaker:</strong> No promotional text on cover — OCR watches for this.</span></li>
+                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Cults3D:</strong> Square, max 8000×8000 and 10&nbsp;MB.</span></li>
+                    </ul>
+                    <div class="bg-gray-850 border border-gray-800 rounded-lg p-3 space-y-2 text-xs">
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-400">Cults size (active)</span>
+                            <span id="cultsSizeEstimate" class="text-pink-300 font-semibold">—</span>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-400">Snapmaker OCR</span>
+                            <span id="ocrChecklistSummary" class="text-gray-300 font-semibold">Waiting…</span>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-400">Batch roles</span>
+                            <span id="rolesChecklistSummary" class="text-gray-300 font-semibold">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-6 flex flex-col gap-2">
+                    <button id="btnUploadNew" data-goatcounter-click="upload-new-image" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-sm transition-colors">
+                        <i class="fa-solid fa-image mr-2"></i> Add / replace images
+                    </button>
+                    <button id="btnClearProject" type="button" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 py-2 rounded-lg text-sm transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-2"></i> Start over
                     </button>
                 </div>
             </aside>
 
             <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
-                
+
                 <!-- Printables Card -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="printables">
-                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-brand-printables"></div>
+                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850 gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-3 h-3 rounded-full bg-brand-printables shrink-0"></div>
                             <span class="font-bold">Printables</span>
                         </div>
-                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">4:3 landscape</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">4:3 landscape</span>
+                            <a href="https://www.printables.com/model/create" target="_blank" rel="noopener noreferrer" class="text-xs text-teal-400 hover:text-teal-300" title="Open Printables upload">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
                         <canvas id="canvas-printables" data-platform-canvas="printables" class="max-w-full h-auto rounded shadow-md w-full aspect-[4/3] bg-black touch-none"></canvas>
@@ -413,17 +618,20 @@
 
                 <!-- MakerWorld Card -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="makerworld">
-                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-brand-makerworld"></div>
+                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850 gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-3 h-3 rounded-full bg-brand-makerworld shrink-0"></div>
                             <span class="font-bold">MakerWorld</span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap justify-end">
                             <span id="makerworld-ratio" class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">4:3 landscape</span>
                             <div class="flex bg-gray-800 rounded p-0.5" aria-label="MakerWorld orientation">
                                 <button id="btnMakerworldLandscape" class="px-2 py-1 text-xs rounded bg-teal-700 text-white transition-colors">Landscape</button>
                                 <button id="btnMakerworldPortrait" class="px-2 py-1 text-xs rounded text-gray-400 hover:text-white transition-colors">Portrait</button>
                             </div>
+                            <a href="https://makerworld.com/en/my/models/publish" target="_blank" rel="noopener noreferrer" class="text-xs text-teal-400 hover:text-teal-300" title="Open MakerWorld upload">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
                         </div>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
@@ -434,12 +642,17 @@
 
                 <!-- Thangs Card -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="thangs">
-                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-brand-thangs"></div>
+                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850 gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-3 h-3 rounded-full bg-brand-thangs shrink-0"></div>
                             <span class="font-bold">Thangs</span>
                         </div>
-                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">9:11 portrait</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">9:11 portrait</span>
+                            <a href="https://thangs.com/uploader" target="_blank" rel="noopener noreferrer" class="text-xs text-teal-400 hover:text-teal-300" title="Open Thangs upload">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
                         <canvas id="canvas-thangs" data-platform-canvas="thangs" class="max-w-full h-auto rounded shadow-md w-full aspect-[9/11] bg-black touch-none"></canvas>
@@ -449,14 +662,19 @@
 
                 <!-- Snapmaker Spaces Card -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col relative border-b-4 border-b-gray-800 h-fit" id="snapmaker-card" data-platform-card="snapmaker">
-                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-brand-snapmaker"></div>
+                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850 gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-3 h-3 rounded-full bg-brand-snapmaker shrink-0"></div>
                             <span class="font-bold">Snapmaker Spaces</span>
                         </div>
-                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">16:9 landscape</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">16:9 landscape</span>
+                            <a href="https://space.snapmaker.com/en" target="_blank" rel="noopener noreferrer" class="text-xs text-teal-400 hover:text-teal-300" title="Open Snapmaker Spaces">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
                     </div>
-                    
+
                     <div class="p-4 pb-12 flex-grow flex items-center justify-center bg-gray-950 relative" id="snapmaker-canvas-wrap">
                         <canvas id="canvas-snapmaker" data-platform-canvas="snapmaker" class="max-w-full h-auto rounded shadow-md w-full aspect-[16/9] bg-black touch-none"></canvas>
                     </div>
@@ -473,11 +691,16 @@
                 <!-- Cults3D Card -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="cults3d">
                     <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850 gap-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full bg-brand-cults3d"></div>
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-3 h-3 rounded-full bg-brand-cults3d shrink-0"></div>
                             <span class="font-bold">Cults3D</span>
                         </div>
-                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 text-right">1:1 · max 8000×8000 · 10 MB</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 text-right">1:1 · max 8000×8000 · 10 MB</span>
+                            <a href="https://cults3d.com/en/creations/new" target="_blank" rel="noopener noreferrer" class="text-xs text-teal-400 hover:text-teal-300" title="Open Cults3D upload">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        </div>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
                         <canvas id="canvas-cults3d" data-platform-canvas="cults3d" class="max-w-full h-auto rounded shadow-md w-full aspect-square bg-black touch-none"></canvas>
@@ -485,6 +708,7 @@
                     <div class="platform-crop-controls hidden border-t border-gray-800 p-4 bg-gray-850/60 flex flex-col gap-3" data-platform-controls="cults3d"></div>
                 </div>
 
+            </div>
             </div>
         </div>
 
@@ -515,1068 +739,5 @@
             </div>
         </div>
     </footer>
-
-    <script>
-        // Application State
-        let sourceImage = null;
-        let bgCustomImage = null;
-        let tesseractWorker = null;
-        let textCheckTimeout = null;
-        const MIN_TEXT_CONFIDENCE = 75;
-        
-        const state = {
-            fitMode: 'contain', // 'contain' or 'cover'
-            bgType: 'blur', // 'blur', 'custom', 'color', texture, or gradient
-            bgColor: '#111827',
-            bgGradientStart: '#4c1d95',
-            bgGradientEnd: '#f97316',
-            bgGradientDirection: 'diagonal',
-            bgTexture: 'texture_dot',
-            bgTextureScale: 1,
-            bgTextureBlur: 0,
-            bgTextureBrightness: 1.0,
-            bgTextureColor: '#ffffff',
-            bgCustomImageName: '',
-            blurVal: 20,
-            edgeSoftness: 0,
-            zoom: 1.0,
-            panX: 0,
-            panY: 0,
-            makerworldOrientation: 'landscape',
-            // Per-service crop transforms used in Cover (Crop) mode
-            platformTransforms: {}
-        };
-
-        function defaultTransform() {
-            return { zoom: 1.0, panX: 0, panY: 0 };
-        }
-
-        function ensurePlatformTransform(platformId) {
-            if (!state.platformTransforms[platformId]) {
-                state.platformTransforms[platformId] = defaultTransform();
-            }
-            return state.platformTransforms[platformId];
-        }
-
-        function getTransformForPlatform(platformId) {
-            if (state.fitMode === 'cover' && platformId) {
-                return ensurePlatformTransform(platformId);
-            }
-            return { zoom: state.zoom, panX: state.panX, panY: state.panY };
-        }
-
-        function getPlatformIds() {
-            return getPlatforms().map((platform) => platform.id);
-        }
-
-        // Platform configurations (High-Res export dimensions required by platforms)
-        function getPlatforms() {
-            const makerworldPortrait = state.makerworldOrientation === 'portrait';
-            return [
-            { id: 'printables', name: 'Printables', width: 1920, height: 1440 },
-            { id: 'makerworld', name: `MakerWorld_${state.makerworldOrientation}`, width: makerworldPortrait ? 1440 : 1920, height: makerworldPortrait ? 1920 : 1440 },
-            { id: 'thangs', name: 'Thangs', width: 900, height: 1100 },
-            { id: 'snapmaker', name: 'SnapmakerSpaces', width: 1920, height: 1080, checkText: true },
-            // Cults3D: 1:1 export at max 8000×8000 / 10 MB
-            { id: 'cults3d', name: 'Cults3D', width: 8000, height: 8000, previewWidth: 1200, previewHeight: 1200, maxBytes: 10 * 1024 * 1024 }
-            ];
-        }
-
-        // DOM Elements Map
-        const DOM = {
-            uploadScreen: document.getElementById('uploadScreen'),
-            fileInput: document.getElementById('fileInput'),
-            editorScreen: document.getElementById('editorScreen'),
-            btnFitContain: document.getElementById('btnFitContain'),
-            btnFitCover: document.getElementById('btnFitCover'),
-            btnMakerworldLandscape: document.getElementById('btnMakerworldLandscape'),
-            btnMakerworldPortrait: document.getElementById('btnMakerworldPortrait'),
-            makerworldRatio: document.getElementById('makerworld-ratio'),
-            bgSettingsPanel: document.getElementById('bgSettingsPanel'),
-            bgType: document.getElementById('bgType'),
-            bgCustomImageWrap: document.getElementById('bgCustomImageWrap'),
-            bgCustomImageInput: document.getElementById('bgCustomImageInput'),
-            btnBgCustomImage: document.getElementById('btnBgCustomImage'),
-            btnClearBgCustomImage: document.getElementById('btnClearBgCustomImage'),
-            bgCustomImageName: document.getElementById('bgCustomImageName'),
-            bgColorPickerWrap: document.getElementById('bgColorPickerWrap'),
-            bgColor: document.getElementById('bgColor'),
-            bgGradientWrap: document.getElementById('bgGradientWrap'),
-            bgGradientStart: document.getElementById('bgGradientStart'),
-            bgGradientEnd: document.getElementById('bgGradientEnd'),
-            bgGradientDirection: document.getElementById('bgGradientDirection'),
-            bgTextureWrap: document.getElementById('bgTextureWrap'),
-            bgTexture: document.getElementById('bgTexture'),
-            bgTextureScale: document.getElementById('bgTextureScale'),
-            textureScaleValDisplay: document.getElementById('textureScaleVal'),
-            bgTextureBlur: document.getElementById('bgTextureBlur'),
-            textureBlurValDisplay: document.getElementById('textureBlurVal'),
-            bgTextureBrightness: document.getElementById('bgTextureBrightness'),
-            textureBrightnessValDisplay: document.getElementById('textureBrightnessVal'),
-            bgTextureColor: document.getElementById('bgTextureColor'),
-            bgBlurWrap: document.getElementById('bgBlurWrap'),
-            bgBlur: document.getElementById('bgBlur'),
-            blurValDisplay: document.getElementById('blurVal'),
-            edgeSoftness: document.getElementById('edgeSoftness'),
-            edgeSoftnessValDisplay: document.getElementById('edgeSoftnessVal'),
-            zoomCtrl: document.getElementById('zoomCtrl'),
-            zoomValDisplay: document.getElementById('zoomVal'),
-            panXCtrl: document.getElementById('panXCtrl'),
-            panYCtrl: document.getElementById('panYCtrl'),
-            cropReferencePanel: document.getElementById('cropReferencePanel'),
-            globalTransformPanel: document.getElementById('globalTransformPanel'),
-            coverModeHint: document.getElementById('coverModeHint'),
-            referenceCanvas: document.getElementById('canvas-reference'),
-            btnReset: document.getElementById('btnReset'),
-            btnUploadNew: document.getElementById('btnUploadNew'),
-            btnDownloadHeader: document.getElementById('btnDownloadHeader'),
-            snapmakerStatus: document.getElementById('snapmaker-status'),
-            snapmakerCard: document.getElementById('snapmaker-card'),
-            toast: document.getElementById('toast'),
-            toastMsg: document.getElementById('toast-msg'),
-            toastIcon: document.getElementById('toast-icon')
-        };
-
-        async function init() {
-            setupPlatformCropControls();
-            setupEventListeners();
-            updateCropModeUI();
-            // Initialize Tesseract Worker in background as soon as page loads
-            try {
-                tesseractWorker = await Tesseract.createWorker('eng');
-                console.log("Tesseract OCR Engine loaded successfully.");
-            } catch(e) {
-                console.error("Failed to load Tesseract OCR Engine", e);
-                showToast("Failed to load OCR engine. Text detection may be unavailable.", false);
-            }
-        }
-
-        function platformCropControlsHtml(platformId) {
-            return `
-                <div class="flex items-center justify-between gap-2">
-                    <p class="text-xs text-gray-400">Drag image to re-focus · zoom &amp; pan to crop</p>
-                    <button type="button" data-platform-reset="${platformId}" class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded text-gray-300 transition-colors shrink-0">Reset crop</button>
-                </div>
-                <div class="flex flex-col gap-1">
-                    <div class="flex justify-between text-xs text-gray-400">
-                        <label for="zoom-${platformId}">Zoom</label>
-                        <span data-platform-zoom-val="${platformId}">1.00x</span>
-                    </div>
-                    <input type="range" id="zoom-${platformId}" data-platform-zoom="${platformId}" min="0.5" max="3" step="0.05" value="1" class="w-full">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label for="panx-${platformId}" class="text-xs text-gray-400">Pan X</label>
-                        <input type="range" id="panx-${platformId}" data-platform-pan-x="${platformId}" min="-100" max="100" value="0" class="w-full">
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label for="pany-${platformId}" class="text-xs text-gray-400">Pan Y</label>
-                        <input type="range" id="pany-${platformId}" data-platform-pan-y="${platformId}" min="-100" max="100" value="0" class="w-full">
-                    </div>
-                </div>
-            `;
-        }
-
-        function setupPlatformCropControls() {
-            document.querySelectorAll('[data-platform-controls]').forEach((panel) => {
-                const platformId = panel.getAttribute('data-platform-controls');
-                panel.innerHTML = platformCropControlsHtml(platformId);
-                ensurePlatformTransform(platformId);
-                syncPlatformCropControls(platformId);
-            });
-        }
-
-        function syncPlatformCropControls(platformId) {
-            const transform = ensurePlatformTransform(platformId);
-            const zoomCtrl = document.querySelector(`[data-platform-zoom="${platformId}"]`);
-            const zoomVal = document.querySelector(`[data-platform-zoom-val="${platformId}"]`);
-            const panXCtrl = document.querySelector(`[data-platform-pan-x="${platformId}"]`);
-            const panYCtrl = document.querySelector(`[data-platform-pan-y="${platformId}"]`);
-            if (!zoomCtrl || !panXCtrl || !panYCtrl) return;
-            zoomCtrl.value = transform.zoom;
-            if (zoomVal) zoomVal.textContent = transform.zoom.toFixed(2) + 'x';
-            panXCtrl.value = transform.panX;
-            panYCtrl.value = transform.panY;
-        }
-
-        function updateCropModeUI() {
-            const isCover = state.fitMode === 'cover';
-            DOM.cropReferencePanel.classList.toggle('hidden', isCover);
-            DOM.globalTransformPanel.classList.toggle('hidden', isCover);
-            DOM.coverModeHint.classList.toggle('hidden', !isCover);
-            document.querySelectorAll('.platform-crop-controls').forEach((panel) => {
-                panel.classList.toggle('hidden', !isCover);
-            });
-            document.querySelectorAll('[data-platform-canvas]').forEach((canvas) => {
-                canvas.classList.toggle('cursor-grab', isCover);
-                if (!isCover) {
-                    canvas.classList.remove('cursor-grabbing');
-                }
-            });
-            const snapmakerWrap = document.getElementById('snapmaker-canvas-wrap');
-            if (snapmakerWrap) {
-                // Status bar clears canvas padding in contain; in cover it clears the crop panel instead
-                snapmakerWrap.classList.toggle('pb-12', !isCover);
-                snapmakerWrap.classList.toggle('pb-4', isCover);
-            }
-        }
-
-        function setupEventListeners() {
-            // Upload interactions (Click and Drag & Drop)
-            DOM.uploadScreen.addEventListener('click', () => DOM.fileInput.click());
-            DOM.uploadScreen.addEventListener('dragover', (e) => { 
-                e.preventDefault(); 
-                DOM.uploadScreen.classList.add('border-teal-500');
-            });
-            DOM.uploadScreen.addEventListener('dragleave', (e) => { 
-                e.preventDefault(); 
-                DOM.uploadScreen.classList.remove('border-teal-500');
-            });
-            DOM.uploadScreen.addEventListener('drop', (e) => {
-                e.preventDefault();
-                DOM.uploadScreen.classList.remove('border-teal-500');
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    handleFile(e.dataTransfer.files[0]);
-                }
-            });
-            DOM.fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-            });
-
-            // Control panel interactions
-            DOM.btnFitContain.addEventListener('click', () => setFitMode('contain'));
-            DOM.btnFitCover.addEventListener('click', () => setFitMode('cover'));
-            DOM.btnMakerworldLandscape.addEventListener('click', () => setMakerworldOrientation('landscape'));
-            DOM.btnMakerworldPortrait.addEventListener('click', () => setMakerworldOrientation('portrait'));
-            
-            DOM.bgType.addEventListener('change', (e) => {
-                state.bgType = e.target.value;
-                updateBgUI();
-                if (state.bgType === 'custom' && !bgCustomImage) {
-                    DOM.bgCustomImageInput.click();
-                }
-                renderAll();
-            });
-            DOM.btnBgCustomImage.addEventListener('click', () => DOM.bgCustomImageInput.click());
-            DOM.btnClearBgCustomImage.addEventListener('click', clearBgCustomImage);
-            DOM.bgCustomImageInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) handleBgCustomImage(e.target.files[0]);
-            });
-            DOM.bgColor.addEventListener('input', (e) => { state.bgColor = e.target.value; renderAll(); });
-            DOM.bgGradientStart.addEventListener('input', (e) => { state.bgGradientStart = e.target.value; renderAll(); });
-            DOM.bgGradientEnd.addEventListener('input', (e) => { state.bgGradientEnd = e.target.value; renderAll(); });
-            DOM.bgGradientDirection.addEventListener('change', (e) => { state.bgGradientDirection = e.target.value; renderAll(); });
-            DOM.bgTexture.addEventListener('change', (e) => { state.bgTexture = e.target.value; renderAll(); });
-            DOM.bgTextureScale.addEventListener('input', (e) => {
-                state.bgTextureScale = parseFloat(e.target.value);
-                DOM.textureScaleValDisplay.textContent = state.bgTextureScale.toFixed(1) + 'x';
-                renderAll();
-            });
-            DOM.bgTextureBlur.addEventListener('input', (e) => {
-                state.bgTextureBlur = parseFloat(e.target.value);
-                DOM.textureBlurValDisplay.textContent = state.bgTextureBlur + 'px';
-                renderAll();
-            });
-            DOM.bgTextureBrightness.addEventListener('input', (e) => {
-                state.bgTextureBrightness = parseFloat(e.target.value);
-                DOM.textureBrightnessValDisplay.textContent = state.bgTextureBrightness.toFixed(1) + 'x';
-                renderAll();
-            });
-            DOM.bgTextureColor.addEventListener('input', (e) => {
-                state.bgTextureColor = e.target.value;
-                renderAll();
-            });
-            DOM.bgBlur.addEventListener('input', (e) => { 
-                state.blurVal = parseInt(e.target.value); 
-                DOM.blurValDisplay.textContent = state.blurVal + 'px';
-                renderAll(); 
-            });
-            DOM.edgeSoftness.addEventListener('input', (e) => {
-                state.edgeSoftness = parseInt(e.target.value);
-                DOM.edgeSoftnessValDisplay.textContent = state.edgeSoftness + 'px';
-                renderAll();
-            });
-
-            DOM.zoomCtrl.addEventListener('input', (e) => {
-                state.zoom = parseFloat(e.target.value);
-                DOM.zoomValDisplay.textContent = state.zoom.toFixed(2) + 'x';
-                renderAll();
-            });
-            DOM.panXCtrl.addEventListener('input', (e) => { state.panX = parseInt(e.target.value); renderAll(); });
-            DOM.panYCtrl.addEventListener('input', (e) => { state.panY = parseInt(e.target.value); renderAll(); });
-            setupReferenceDrag();
-            setupPlatformCropInteractions();
-
-            DOM.btnReset.addEventListener('click', resetControls);
-            DOM.btnUploadNew.addEventListener('click', () => {
-                DOM.fileInput.value = ''; // Reset input to allow selecting same file again
-                DOM.fileInput.click();
-            });
-            DOM.btnDownloadHeader.addEventListener('click', generateZip);
-        }
-
-        function setFitMode(mode) {
-            state.fitMode = mode;
-            if (mode === 'contain') {
-                DOM.btnFitContain.classList.add('bg-teal-700', 'text-white', 'shadow');
-                DOM.btnFitContain.classList.remove('text-gray-400', 'hover:text-white');
-                DOM.btnFitCover.classList.remove('bg-teal-700', 'text-white', 'shadow');
-                DOM.btnFitCover.classList.add('text-gray-400', 'hover:text-white');
-                DOM.bgSettingsPanel.style.display = 'flex';
-            } else {
-                DOM.btnFitCover.classList.add('bg-teal-700', 'text-white', 'shadow');
-                DOM.btnFitCover.classList.remove('text-gray-400', 'hover:text-white');
-                DOM.btnFitContain.classList.remove('bg-teal-700', 'text-white', 'shadow');
-                DOM.btnFitContain.classList.add('text-gray-400', 'hover:text-white');
-                DOM.bgSettingsPanel.style.display = 'none';
-                getPlatformIds().forEach((platformId) => {
-                    ensurePlatformTransform(platformId);
-                    syncPlatformCropControls(platformId);
-                });
-            }
-            updateCropModeUI();
-            renderAll();
-        }
-
-        function setMakerworldOrientation(orientation) {
-            state.makerworldOrientation = orientation;
-            const isPortrait = orientation === 'portrait';
-            DOM.btnMakerworldPortrait.classList.toggle('bg-teal-700', isPortrait);
-            DOM.btnMakerworldPortrait.classList.toggle('text-white', isPortrait);
-            DOM.btnMakerworldPortrait.classList.toggle('text-gray-400', !isPortrait);
-            DOM.btnMakerworldLandscape.classList.toggle('bg-teal-700', !isPortrait);
-            DOM.btnMakerworldLandscape.classList.toggle('text-white', !isPortrait);
-            DOM.btnMakerworldLandscape.classList.toggle('text-gray-400', isPortrait);
-            DOM.makerworldRatio.textContent = isPortrait ? '3:4 portrait' : '4:3 landscape';
-            document.getElementById('canvas-makerworld').classList.toggle('aspect-[4/3]', !isPortrait);
-            document.getElementById('canvas-makerworld').classList.toggle('aspect-[3/4]', isPortrait);
-            renderAll();
-        }
-
-        function updateBgUI() {
-            DOM.bgColorPickerWrap.classList.add('hidden');
-            DOM.bgGradientWrap.classList.add('hidden');
-            DOM.bgTextureWrap.classList.add('hidden');
-            DOM.bgCustomImageWrap.classList.add('hidden');
-            DOM.bgBlurWrap.classList.add('hidden');
-            
-            if (state.bgType === 'color') DOM.bgColorPickerWrap.classList.remove('hidden');
-            if (state.bgType === 'gradient') DOM.bgGradientWrap.classList.remove('hidden');
-            if (state.bgType === 'texture') DOM.bgTextureWrap.classList.remove('hidden');
-            if (state.bgType === 'custom') {
-                DOM.bgCustomImageWrap.classList.remove('hidden');
-                DOM.bgBlurWrap.classList.remove('hidden');
-                syncBgCustomImageUI();
-            }
-            if (state.bgType === 'blur') DOM.bgBlurWrap.classList.remove('hidden');
-        }
-
-        function syncBgCustomImageUI() {
-            const hasImage = Boolean(bgCustomImage);
-            DOM.bgCustomImageName.textContent = hasImage
-                ? state.bgCustomImageName
-                : 'No background image selected';
-            DOM.bgCustomImageName.classList.toggle('text-gray-300', hasImage);
-            DOM.bgCustomImageName.classList.toggle('text-gray-500', !hasImage);
-            DOM.btnClearBgCustomImage.classList.toggle('hidden', !hasImage);
-            DOM.btnBgCustomImage.innerHTML = hasImage
-                ? '<i class="fa-solid fa-image mr-2"></i>Replace background'
-                : '<i class="fa-solid fa-image mr-2"></i>Choose background';
-        }
-
-        function clearBgCustomImage() {
-            bgCustomImage = null;
-            state.bgCustomImageName = '';
-            DOM.bgCustomImageInput.value = '';
-            syncBgCustomImageUI();
-            renderAll();
-        }
-
-        function handleBgCustomImage(file) {
-            if (!file.type.startsWith('image/')) {
-                showToast('Please upload a valid background image.', false);
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    bgCustomImage = img;
-                    state.bgCustomImageName = file.name;
-                    state.bgType = 'custom';
-                    DOM.bgType.value = 'custom';
-                    updateBgUI();
-                    renderAll();
-                    showToast('Custom background loaded.', true);
-                };
-                img.onerror = () => showToast('Could not load background image.', false);
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function drawBlurredCoverBackground(ctx, image, cw, ch) {
-            const iw = image.width;
-            const ih = image.height;
-            const coverScale = Math.max(cw / iw, ch / ih);
-            const bgW = iw * coverScale;
-            const bgH = ih * coverScale;
-            const bgX = (cw - bgW) / 2;
-            const bgY = (ch - bgH) / 2;
-
-            ctx.filter = `blur(${state.blurVal}px) brightness(0.6)`;
-            ctx.drawImage(image, bgX, bgY, bgW, bgH);
-            ctx.filter = 'none';
-        }
-
-        function resetControls() {
-            state.zoom = 1.0;
-            state.panX = 0;
-            state.panY = 0;
-            state.platformTransforms = {};
-            state.bgTextureBlur = 0;
-            state.bgTextureBrightness = 1.0;
-            state.bgTextureColor = '#ffffff';
-            state.blurVal = 20;
-            state.edgeSoftness = 0;
-            
-            DOM.zoomCtrl.value = 1; DOM.zoomValDisplay.textContent = '1.0x';
-            syncPanControls();
-            getPlatformIds().forEach((platformId) => {
-                ensurePlatformTransform(platformId);
-                syncPlatformCropControls(platformId);
-            });
-            DOM.bgTextureBlur.value = 0; DOM.textureBlurValDisplay.textContent = '0px';
-            DOM.bgTextureBrightness.value = 1; DOM.textureBrightnessValDisplay.textContent = '1.0x';
-            DOM.bgTextureColor.value = '#ffffff';
-            DOM.bgBlur.value = 20; DOM.blurValDisplay.textContent = '20px';
-            DOM.edgeSoftness.value = 0; DOM.edgeSoftnessValDisplay.textContent = '0px';
-            
-            renderAll();
-        }
-
-        function setupReferenceDrag() {
-            let dragStart = null;
-            const centerSnapThreshold = 2;
-
-            DOM.referenceCanvas.addEventListener('pointerdown', (event) => {
-                if (!sourceImage || state.fitMode === 'cover') return;
-                dragStart = { x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
-                DOM.referenceCanvas.setPointerCapture(event.pointerId);
-                DOM.referenceCanvas.classList.replace('cursor-grab', 'cursor-grabbing');
-            });
-
-            DOM.referenceCanvas.addEventListener('pointermove', (event) => {
-                if (!dragStart) return;
-                const rect = DOM.referenceCanvas.getBoundingClientRect();
-                const canvasDeltaX = (event.clientX - dragStart.x) * (DOM.referenceCanvas.width / rect.width);
-                const canvasDeltaY = (event.clientY - dragStart.y) * (DOM.referenceCanvas.height / rect.height);
-                const scale = getImageScale(DOM.referenceCanvas.width, DOM.referenceCanvas.height, state.zoom);
-
-                const panX = Math.max(-100, Math.min(100, dragStart.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
-                const panY = Math.max(-100, Math.min(100, dragStart.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
-                state.panX = Math.abs(panX) < centerSnapThreshold ? 0 : panX;
-                state.panY = Math.abs(panY) < centerSnapThreshold ? 0 : panY;
-                syncPanControls();
-                renderAll();
-            });
-
-            const finishDrag = () => {
-                dragStart = null;
-                DOM.referenceCanvas.classList.replace('cursor-grabbing', 'cursor-grab');
-            };
-            DOM.referenceCanvas.addEventListener('pointerup', finishDrag);
-            DOM.referenceCanvas.addEventListener('pointercancel', finishDrag);
-        }
-
-        function setupPlatformCropInteractions() {
-            const centerSnapThreshold = 2;
-            const dragState = { platformId: null, start: null };
-
-            document.querySelectorAll('[data-platform-canvas]').forEach((canvas) => {
-                const platformId = canvas.getAttribute('data-platform-canvas');
-
-                canvas.addEventListener('pointerdown', (event) => {
-                    if (!sourceImage || state.fitMode !== 'cover') return;
-                    const transform = ensurePlatformTransform(platformId);
-                    dragState.platformId = platformId;
-                    dragState.start = {
-                        x: event.clientX,
-                        y: event.clientY,
-                        panX: transform.panX,
-                        panY: transform.panY
-                    };
-                    canvas.setPointerCapture(event.pointerId);
-                    canvas.classList.replace('cursor-grab', 'cursor-grabbing');
-                });
-
-                canvas.addEventListener('pointermove', (event) => {
-                    if (!dragState.start || dragState.platformId !== platformId) return;
-                    const transform = ensurePlatformTransform(platformId);
-                    const rect = canvas.getBoundingClientRect();
-                    const canvasDeltaX = (event.clientX - dragState.start.x) * (canvas.width / rect.width);
-                    const canvasDeltaY = (event.clientY - dragState.start.y) * (canvas.height / rect.height);
-                    const scale = getImageScale(canvas.width, canvas.height, transform.zoom);
-                    const panX = Math.max(-100, Math.min(100, dragState.start.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
-                    const panY = Math.max(-100, Math.min(100, dragState.start.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
-                    transform.panX = Math.abs(panX) < centerSnapThreshold ? 0 : panX;
-                    transform.panY = Math.abs(panY) < centerSnapThreshold ? 0 : panY;
-                    syncPlatformCropControls(platformId);
-                    renderPlatform(platformId);
-                });
-
-                const finishDrag = () => {
-                    if (dragState.platformId === platformId) {
-                        dragState.platformId = null;
-                        dragState.start = null;
-                    }
-                    if (state.fitMode === 'cover') {
-                        canvas.classList.replace('cursor-grabbing', 'cursor-grab');
-                    }
-                };
-                canvas.addEventListener('pointerup', finishDrag);
-                canvas.addEventListener('pointercancel', finishDrag);
-            });
-
-            document.querySelectorAll('[data-platform-zoom]').forEach((input) => {
-                input.addEventListener('input', (event) => {
-                    const platformId = event.target.getAttribute('data-platform-zoom');
-                    const transform = ensurePlatformTransform(platformId);
-                    transform.zoom = parseFloat(event.target.value);
-                    const zoomVal = document.querySelector(`[data-platform-zoom-val="${platformId}"]`);
-                    if (zoomVal) zoomVal.textContent = transform.zoom.toFixed(2) + 'x';
-                    renderPlatform(platformId);
-                });
-            });
-
-            document.querySelectorAll('[data-platform-pan-x]').forEach((input) => {
-                input.addEventListener('input', (event) => {
-                    const platformId = event.target.getAttribute('data-platform-pan-x');
-                    ensurePlatformTransform(platformId).panX = parseInt(event.target.value, 10);
-                    renderPlatform(platformId);
-                });
-            });
-
-            document.querySelectorAll('[data-platform-pan-y]').forEach((input) => {
-                input.addEventListener('input', (event) => {
-                    const platformId = event.target.getAttribute('data-platform-pan-y');
-                    ensurePlatformTransform(platformId).panY = parseInt(event.target.value, 10);
-                    renderPlatform(platformId);
-                });
-            });
-
-            document.querySelectorAll('[data-platform-reset]').forEach((button) => {
-                button.addEventListener('click', (event) => {
-                    const platformId = event.currentTarget.getAttribute('data-platform-reset');
-                    state.platformTransforms[platformId] = defaultTransform();
-                    syncPlatformCropControls(platformId);
-                    renderPlatform(platformId);
-                });
-            });
-        }
-
-        function syncPanControls() {
-            DOM.panXCtrl.value = state.panX;
-            DOM.panYCtrl.value = state.panY;
-        }
-
-        function showToast(msg, isSuccess=true) {
-            DOM.toastMsg.textContent = msg;
-            DOM.toastIcon.className = isSuccess ? 'fa-solid fa-circle-check text-green-400' : 'fa-solid fa-circle-exclamation text-red-400';
-            DOM.toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-            setTimeout(() => {
-                DOM.toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-            }, 3000);
-        }
-
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                showToast("Please upload a valid image file.", false);
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    sourceImage = img;
-                    // Transition UI from upload screen to editor screen
-                    DOM.uploadScreen.classList.add('hidden');
-                    DOM.editorScreen.classList.remove('hidden');
-                    DOM.btnDownloadHeader.classList.remove('hidden');
-                    resetControls(); // This will also trigger renderAll()
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function renderPlatform(platformId) {
-            if (!sourceImage) return;
-            const platform = getPlatforms().find((item) => item.id === platformId);
-            if (!platform) return;
-            const canvas = document.getElementById(`canvas-${platform.id}`);
-            if (!canvas) return;
-            const previewW = platform.previewWidth || platform.width;
-            const previewH = platform.previewHeight || platform.height;
-            renderCanvas(canvas, previewW, previewH, getTransformForPlatform(platform.id));
-            if (platform.checkText) {
-                triggerTextCheck(canvas);
-            }
-        }
-
-        function renderAll() {
-            if (!sourceImage) return;
-
-            if (state.fitMode === 'contain') {
-                renderCanvas(DOM.referenceCanvas, 800, 600, getTransformForPlatform(null));
-            }
-
-            // Iterate over each target platform and render its canvas
-            getPlatforms().forEach(platform => {
-                renderPlatform(platform.id);
-            });
-        }
-
-        function canvasToJpegBlob(canvas, quality) {
-            return new Promise((resolve) => {
-                canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
-            });
-        }
-
-        // Export at platform size; for maxBytes platforms, lower quality then scale down if needed
-        async function exportPlatformBlob(platform) {
-            const exportCanvas = document.createElement('canvas');
-            let width = platform.width;
-            let height = platform.height;
-            const transform = getTransformForPlatform(platform.id);
-            renderCanvas(exportCanvas, width, height, transform);
-
-            let quality = 0.95;
-            let blob = await canvasToJpegBlob(exportCanvas, quality);
-
-            if (!platform.maxBytes) {
-                return { blob, width, height };
-            }
-
-            while (blob && blob.size > platform.maxBytes && quality > 0.55) {
-                quality = Math.round((quality - 0.05) * 100) / 100;
-                blob = await canvasToJpegBlob(exportCanvas, quality);
-            }
-
-            while (blob && blob.size > platform.maxBytes && width > 800) {
-                width = Math.round(width * 0.85);
-                height = Math.round(height * 0.85);
-                // Stay within Cults3D maximum pixel dimensions
-                width = Math.min(width, 8000);
-                height = Math.min(height, 8000);
-                renderCanvas(exportCanvas, width, height, transform);
-                quality = 0.9;
-                blob = await canvasToJpegBlob(exportCanvas, quality);
-                while (blob && blob.size > platform.maxBytes && quality > 0.55) {
-                    quality = Math.round((quality - 0.05) * 100) / 100;
-                    blob = await canvasToJpegBlob(exportCanvas, quality);
-                }
-            }
-
-            return { blob, width, height };
-        }
-
-        function getTexturePattern(ctx, type) {
-            const patCanvas = document.createElement('canvas');
-            const pCtx = patCanvas.getContext('2d');
-            
-            if (type === 'texture_dot') {
-                patCanvas.width = 20; patCanvas.height = 20;
-                pCtx.fillStyle = '#111827';
-                pCtx.fillRect(0, 0, 20, 20);
-                pCtx.fillStyle = '#374151';
-                pCtx.beginPath();
-                pCtx.arc(10, 10, 3, 0, Math.PI*2);
-                pCtx.fill();
-            } else if (type === 'texture_line') {
-                patCanvas.width = 40; patCanvas.height = 40;
-                pCtx.fillStyle = '#1f2937';
-                pCtx.fillRect(0, 0, 40, 40);
-                pCtx.strokeStyle = '#111827';
-                pCtx.lineWidth = 4;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 40);
-                pCtx.lineTo(40, 0);
-                pCtx.moveTo(-10, 10);
-                pCtx.lineTo(10, -10);
-                pCtx.moveTo(30, 50);
-                pCtx.lineTo(50, 30);
-                pCtx.stroke();
-            } else if (type === 'texture_grid') {
-                patCanvas.width = 32; patCanvas.height = 32;
-                pCtx.fillStyle = '#172033';
-                pCtx.fillRect(0, 0, 32, 32);
-                pCtx.strokeStyle = '#334155';
-                pCtx.lineWidth = 1;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 0);
-                pCtx.lineTo(32, 0);
-                pCtx.moveTo(0, 0);
-                pCtx.lineTo(0, 32);
-                pCtx.stroke();
-            } else if (type === 'texture_crosshatch') {
-                patCanvas.width = 24; patCanvas.height = 24;
-                pCtx.fillStyle = '#1c1917';
-                pCtx.fillRect(0, 0, 24, 24);
-                pCtx.strokeStyle = '#57534e';
-                pCtx.lineWidth = 1;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 24);
-                pCtx.lineTo(24, 0);
-                pCtx.moveTo(0, 0);
-                pCtx.lineTo(24, 24);
-                pCtx.stroke();
-            } else if (type === 'texture_checkerboard') {
-                patCanvas.width = 32; patCanvas.height = 32;
-                pCtx.fillStyle = '#111827';
-                pCtx.fillRect(0, 0, 32, 32);
-                pCtx.fillStyle = '#1f2937';
-                pCtx.fillRect(0, 0, 16, 16);
-                pCtx.fillRect(16, 16, 16, 16);
-            } else if (type === 'texture_wave') {
-                patCanvas.width = 48; patCanvas.height = 24;
-                pCtx.fillStyle = '#0c4a6e';
-                pCtx.fillRect(0, 0, 48, 24);
-                pCtx.strokeStyle = '#38bdf8';
-                pCtx.lineWidth = 2;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 6);
-                pCtx.quadraticCurveTo(12, 0, 24, 6);
-                pCtx.quadraticCurveTo(36, 12, 48, 6);
-                pCtx.moveTo(0, 18);
-                pCtx.quadraticCurveTo(12, 12, 24, 18);
-                pCtx.quadraticCurveTo(36, 24, 48, 18);
-                pCtx.stroke();
-            } else if (type === 'texture_hex') {
-                patCanvas.width = 36; patCanvas.height = 42;
-                pCtx.fillStyle = '#1e1b4b';
-                pCtx.fillRect(0, 0, 36, 42);
-                pCtx.strokeStyle = '#6366f1';
-                pCtx.lineWidth = 1;
-                for (let y = -21; y < 63; y += 21) {
-                    for (let x = -18; x < 54; x += 36) {
-                        const centerX = x + (Math.round((y + 21) / 21) % 2) * 18;
-                        pCtx.beginPath();
-                        for (let i = 0; i < 6; i++) {
-                            const angle = Math.PI / 3 * i;
-                            const pointX = centerX + 12 * Math.cos(angle);
-                            const pointY = y + 12 * Math.sin(angle);
-                            if (i === 0) pCtx.moveTo(pointX, pointY);
-                            else pCtx.lineTo(pointX, pointY);
-                        }
-                        pCtx.closePath();
-                        pCtx.stroke();
-                    }
-                }
-            } else if (type === 'texture_brick') {
-                patCanvas.width = 48; patCanvas.height = 32;
-                pCtx.fillStyle = '#3f1d1d';
-                pCtx.fillRect(0, 0, 48, 32);
-                pCtx.strokeStyle = '#a85a4a';
-                pCtx.lineWidth = 2;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 0); pCtx.lineTo(48, 0);
-                pCtx.moveTo(0, 16); pCtx.lineTo(48, 16);
-                pCtx.moveTo(24, 0); pCtx.lineTo(24, 16);
-                pCtx.moveTo(0, 16); pCtx.lineTo(0, 32);
-                pCtx.moveTo(48, 16); pCtx.lineTo(48, 32);
-                pCtx.stroke();
-            } else if (type === 'texture_triangle') {
-                patCanvas.width = 40; patCanvas.height = 35;
-                pCtx.fillStyle = '#172554';
-                pCtx.fillRect(0, 0, 40, 35);
-                pCtx.strokeStyle = '#60a5fa';
-                pCtx.lineWidth = 1;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 35); pCtx.lineTo(20, 0); pCtx.lineTo(40, 35);
-                pCtx.moveTo(0, 0); pCtx.lineTo(40, 0);
-                pCtx.stroke();
-            } else if (type === 'texture_plaid') {
-                patCanvas.width = 40; patCanvas.height = 40;
-                pCtx.fillStyle = '#1e293b';
-                pCtx.fillRect(0, 0, 40, 40);
-                pCtx.fillStyle = '#475569';
-                pCtx.fillRect(0, 0, 8, 40);
-                pCtx.fillRect(20, 0, 4, 40);
-                pCtx.fillStyle = 'rgba(148, 163, 184, 0.45)';
-                pCtx.fillRect(0, 0, 40, 8);
-                pCtx.fillRect(0, 20, 40, 4);
-            } else if (type === 'texture_star') {
-                patCanvas.width = 36; patCanvas.height = 36;
-                pCtx.fillStyle = '#312e81';
-                pCtx.fillRect(0, 0, 36, 36);
-                pCtx.fillStyle = '#fef3c7';
-                for (const [x, y, radius] of [[8, 9, 2], [27, 7, 1.5], [19, 24, 2.5], [4, 29, 1]]) {
-                    pCtx.beginPath();
-                    for (let i = 0; i < 10; i++) {
-                        const angle = -Math.PI / 2 + i * Math.PI / 5;
-                        const r = i % 2 === 0 ? radius : radius / 2;
-                        const pointX = x + r * Math.cos(angle);
-                        const pointY = y + r * Math.sin(angle);
-                        if (i === 0) pCtx.moveTo(pointX, pointY);
-                        else pCtx.lineTo(pointX, pointY);
-                    }
-                    pCtx.fill();
-                }
-            } else if (type === 'texture_circuit') {
-                patCanvas.width = 48; patCanvas.height = 48;
-                pCtx.fillStyle = '#052e16';
-                pCtx.fillRect(0, 0, 48, 48);
-                pCtx.strokeStyle = '#34d399';
-                pCtx.lineWidth = 2;
-                pCtx.beginPath();
-                pCtx.moveTo(0, 12); pCtx.lineTo(18, 12); pCtx.lineTo(24, 18); pCtx.lineTo(48, 18);
-                pCtx.moveTo(12, 48); pCtx.lineTo(12, 30); pCtx.lineTo(30, 30); pCtx.lineTo(36, 24); pCtx.lineTo(36, 0);
-                pCtx.stroke();
-                pCtx.fillStyle = '#a7f3d0';
-                pCtx.fillRect(21, 15, 6, 6);
-                pCtx.fillRect(9, 27, 6, 6);
-            } else if (type === 'texture_topography') {
-                patCanvas.width = 56; patCanvas.height = 56;
-                pCtx.fillStyle = '#422006';
-                pCtx.fillRect(0, 0, 56, 56);
-                pCtx.strokeStyle = '#fbbf24';
-                pCtx.lineWidth = 1;
-                for (let radius = 9; radius <= 31; radius += 7) {
-                    pCtx.beginPath();
-                    pCtx.ellipse(28, 28, radius, radius * 0.65, -0.4, 0, Math.PI * 2);
-                    pCtx.stroke();
-                }
-            } else if (type === 'texture_confetti') {
-                patCanvas.width = 48; patCanvas.height = 48;
-                pCtx.fillStyle = '#4c1d95';
-                pCtx.fillRect(0, 0, 48, 48);
-                const pieces = [[8, 8, '#facc15', 0.8], [29, 9, '#fb7185', -0.5], [18, 25, '#22d3ee', 0.4], [39, 32, '#a3e635', -0.8], [7, 40, '#f97316', 0.2]];
-                pieces.forEach(([x, y, color, rotation]) => {
-                    pCtx.save();
-                    pCtx.translate(x, y);
-                    pCtx.rotate(rotation);
-                    pCtx.fillStyle = color;
-                    pCtx.fillRect(-2, -5, 4, 10);
-                    pCtx.restore();
-                });
-            }
-            const pattern = ctx.createPattern(patCanvas, 'repeat');
-            pattern.setTransform(new DOMMatrix().scale(state.bgTextureScale));
-            return pattern;
-        }
-
-        function getGradient(ctx, width, height) {
-            let x1 = 0;
-            let y1 = 0;
-            let x2 = width;
-            let y2 = height;
-
-            if (state.bgGradientDirection === 'horizontal') {
-                y2 = 0;
-            } else if (state.bgGradientDirection === 'vertical') {
-                x2 = 0;
-            } else if (state.bgGradientDirection === 'diagonal-reverse') {
-                y1 = height;
-                y2 = 0;
-            }
-
-            const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-            gradient.addColorStop(0, state.bgGradientStart);
-            gradient.addColorStop(1, state.bgGradientEnd);
-            return gradient;
-        }
-
-        function renderCanvas(canvas, targetWidth, targetHeight, transform) {
-            // High-res internal rendering
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
-            const ctx = canvas.getContext('2d');
-            const activeTransform = transform || { zoom: state.zoom, panX: state.panX, panY: state.panY };
-            
-            const iw = sourceImage.width;
-            const ih = sourceImage.height;
-            const cw = canvas.width;
-            const ch = canvas.height;
-
-            ctx.clearRect(0, 0, cw, ch);
-
-            // Calculate scale based on chosen fit mode
-            const scale = getImageScale(cw, ch, activeTransform.zoom);
-
-            const scaledW = iw * scale;
-            const scaledH = ih * scale;
-
-            // Apply manual pan offsets (-100 to 100 range)
-            const offsetX = (scaledW * (activeTransform.panX / 200));
-            const offsetY = (scaledH * (activeTransform.panY / 200));
-
-            const x = (cw - scaledW) / 2 + offsetX;
-            const y = (ch - scaledH) / 2 + offsetY;
-
-            // Render Background (only visible in 'contain' mode)
-            if (state.fitMode === 'contain') {
-                if (state.bgType === 'blur') {
-                    drawBlurredCoverBackground(ctx, sourceImage, cw, ch);
-                } else if (state.bgType === 'custom') {
-                    if (bgCustomImage) {
-                        drawBlurredCoverBackground(ctx, bgCustomImage, cw, ch);
-                    } else {
-                        ctx.fillStyle = '#111827';
-                        ctx.fillRect(0, 0, cw, ch);
-                    }
-                } else if (state.bgType === 'color') {
-                    ctx.fillStyle = state.bgColor;
-                    ctx.fillRect(0, 0, cw, ch);
-                } else if (state.bgType === 'texture') {
-                    ctx.save();
-                    ctx.filter = `blur(${state.bgTextureBlur}px) brightness(${state.bgTextureBrightness})`;
-                    ctx.fillStyle = getTexturePattern(ctx, state.bgTexture);
-                    ctx.fillRect(0, 0, cw, ch);
-
-                    if (state.bgTextureColor && state.bgTextureColor !== '#ffffff') {
-                        ctx.globalCompositeOperation = 'color';
-                        ctx.fillStyle = state.bgTextureColor;
-                        ctx.fillRect(0, 0, cw, ch);
-                    }
-                    ctx.restore();
-                } else if (state.bgType === 'gradient') {
-                    ctx.fillStyle = getGradient(ctx, cw, ch);
-                    ctx.fillRect(0, 0, cw, ch);
-                }
-            }
-
-            // Draw the main foreground image
-            if (state.fitMode === 'contain' && state.edgeSoftness > 0) {
-                const edgeSoftness = Math.min(state.edgeSoftness, scaledW / 2, scaledH / 2);
-                const foregroundCanvas = document.createElement('canvas');
-                foregroundCanvas.width = cw;
-                foregroundCanvas.height = ch;
-                const foregroundCtx = foregroundCanvas.getContext('2d');
-
-                foregroundCtx.drawImage(sourceImage, x, y, scaledW, scaledH);
-                foregroundCtx.globalCompositeOperation = 'destination-in';
-
-                const horizontalMask = foregroundCtx.createLinearGradient(x, 0, x + scaledW, 0);
-                horizontalMask.addColorStop(0, 'transparent');
-                horizontalMask.addColorStop(edgeSoftness / scaledW, 'black');
-                horizontalMask.addColorStop(1 - edgeSoftness / scaledW, 'black');
-                horizontalMask.addColorStop(1, 'transparent');
-                foregroundCtx.fillStyle = horizontalMask;
-                foregroundCtx.fillRect(x, y, scaledW, scaledH);
-
-                const verticalMask = foregroundCtx.createLinearGradient(0, y, 0, y + scaledH);
-                verticalMask.addColorStop(0, 'transparent');
-                verticalMask.addColorStop(edgeSoftness / scaledH, 'black');
-                verticalMask.addColorStop(1 - edgeSoftness / scaledH, 'black');
-                verticalMask.addColorStop(1, 'transparent');
-                foregroundCtx.fillStyle = verticalMask;
-                foregroundCtx.fillRect(x, y, scaledW, scaledH);
-
-                ctx.drawImage(foregroundCanvas, 0, 0);
-            } else {
-                ctx.drawImage(sourceImage, x, y, scaledW, scaledH);
-            }
-        }
-
-        function getImageScale(canvasWidth, canvasHeight, zoom = state.zoom) {
-            const baseScale = state.fitMode === 'contain'
-                ? Math.min(canvasWidth / sourceImage.width, canvasHeight / sourceImage.height)
-                : Math.max(canvasWidth / sourceImage.width, canvasHeight / sourceImage.height);
-            return baseScale * zoom;
-        }
-
-        function triggerTextCheck(sourceCanvas) {
-            // Set UI to loading state to give user feedback
-            DOM.snapmakerStatus.className = "absolute bottom-0 left-0 w-full p-2 text-xs font-semibold flex items-center justify-center gap-2 bg-teal-900 text-teal-200 h-10";
-            DOM.snapmakerStatus.innerHTML = `<div class="spinner border-teal-400 border-l-white"></div> Scanning for text (Rules check)...`;
-            DOM.snapmakerCard.classList.remove('border-b-green-500', 'border-b-red-500');
-            DOM.snapmakerCard.classList.add('border-b-gray-800');
-
-            // Clear previous timeout to debounce the heavy OCR processing
-            clearTimeout(textCheckTimeout);
-            
-            textCheckTimeout = setTimeout(async () => {
-                if (!tesseractWorker) {
-                    DOM.snapmakerStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-yellow-400"></i> OCR Engine Not Loaded`;
-                    DOM.snapmakerStatus.className = "absolute bottom-0 left-0 w-full p-2 text-xs font-semibold flex items-center justify-center gap-2 bg-yellow-900 text-yellow-200 h-10";
-                    return;
-                }
-
-                // Optimization: Draw to a smaller off-screen canvas to significantly speed up OCR
-                const ocrCanvas = document.getElementById('canvas-ocr');
-                ocrCanvas.width = 800; // Fixed small width for fast OCR analysis
-                ocrCanvas.height = 800 * (sourceCanvas.height / sourceCanvas.width);
-                const ocrCtx = ocrCanvas.getContext('2d');
-                ocrCtx.drawImage(sourceCanvas, 0, 0, ocrCanvas.width, ocrCanvas.height);
-                
-                try {
-                    const ret = await tesseractWorker.recognize(ocrCanvas);
-                    const textFound = ret.data.words.some(({ text, confidence }) => {
-                        const cleanText = text.replace(/[^a-zA-Z0-9]/g, '');
-                        return cleanText.length > 3 && confidence >= MIN_TEXT_CONFIDENCE;
-                    });
-                    
-                    if (textFound) {
-                        // Potential Text detected!
-                        DOM.snapmakerStatus.className = "absolute bottom-0 left-0 w-full p-2 text-xs font-semibold flex items-center justify-center gap-2 bg-red-900 text-red-200 h-10";
-                        DOM.snapmakerStatus.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400 text-base"></i> Text Detected (Violates Snapmaker Rules)`;
-                        DOM.snapmakerCard.classList.remove('border-b-gray-800');
-                        DOM.snapmakerCard.classList.add('border-b-red-500');
-                    } else {
-                        // Safe!
-                        DOM.snapmakerStatus.className = "absolute bottom-0 left-0 w-full p-2 text-xs font-semibold flex items-center justify-center gap-2 bg-green-900 text-green-200 h-10";
-                        DOM.snapmakerStatus.innerHTML = `<i class="fa-solid fa-circle-check text-green-400 text-base"></i> No Text Detected (Rules Passed)`;
-                        DOM.snapmakerCard.classList.remove('border-b-gray-800');
-                        DOM.snapmakerCard.classList.add('border-b-green-500');
-                    }
-                } catch(err) {
-                    console.error("OCR Error", err);
-                    DOM.snapmakerStatus.innerHTML = `Error checking text`;
-                }
-
-            }, 800); // 800ms debounce
-        }
-
-        async function generateZip() {
-            if (!sourceImage) return;
-
-            // Set button to loading state
-            const btnOriginalHtml = DOM.btnDownloadHeader.innerHTML;
-            DOM.btnDownloadHeader.innerHTML = `<div class="spinner border-white border-l-transparent"></div> Bundling...`;
-            DOM.btnDownloadHeader.disabled = true;
-            DOM.btnDownloadHeader.classList.add('opacity-80', 'cursor-not-allowed');
-
-            try {
-                const zip = new JSZip();
-                
-                // Convert each platform export to a JPEG blob and add to zip
-                const promises = getPlatforms().map(async (platform) => {
-                    const { blob, width, height } = await exportPlatformBlob(platform);
-                    zip.file(`${platform.name}_${width}x${height}.jpg`, blob);
-                });
-
-                await Promise.all(promises);
-
-                // Generate ZIP file and trigger download
-                const content = await zip.generateAsync({type:"blob"});
-                saveAs(content, "3D_Model_Photos.zip");
-                showToast("Zip bundle generated successfully!", true);
-
-            } catch (err) {
-                console.error("Zip Error", err);
-                showToast("Error generating zip bundle.", false);
-            } finally {
-                // Restore button state
-                DOM.btnDownloadHeader.innerHTML = btnOriginalHtml;
-                DOM.btnDownloadHeader.disabled = false;
-                DOM.btnDownloadHeader.classList.remove('opacity-80', 'cursor-not-allowed');
-            }
-        }
-
-        // Run Init when window loads
-        window.onload = init;
-
-    </script>
 </body>
 </html>
