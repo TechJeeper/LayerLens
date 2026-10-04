@@ -171,10 +171,24 @@
                     
                     <select id="bgType" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
                         <option value="blur">Blurred Original</option>
+                        <option value="custom">Custom Image</option>
                         <option value="color">Solid Color</option>
                         <option value="gradient">Gradient</option>
                         <option value="texture">Texture</option>
                     </select>
+
+                    <div id="bgCustomImageWrap" class="hidden flex flex-col gap-2">
+                        <input type="file" id="bgCustomImageInput" accept="image/*" class="hidden">
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btnBgCustomImage" class="flex-1 bg-gray-950 hover:bg-gray-900 border border-gray-700 text-white py-2 px-3 rounded-lg text-sm transition-colors">
+                                <i class="fa-solid fa-image mr-2"></i>Choose background
+                            </button>
+                            <button type="button" id="btnClearBgCustomImage" class="hidden bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 py-2 px-3 rounded-lg text-sm transition-colors" title="Clear custom background">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <p id="bgCustomImageName" class="text-xs text-gray-500 truncate">No background image selected</p>
+                    </div>
 
                     <div id="bgColorPickerWrap" class="hidden flex items-center justify-between">
                         <span class="text-sm text-gray-400">Color</span>
@@ -424,13 +438,14 @@
     <script>
         // Application State
         let sourceImage = null;
+        let bgCustomImage = null;
         let tesseractWorker = null;
         let textCheckTimeout = null;
         const MIN_TEXT_CONFIDENCE = 75;
         
         const state = {
             fitMode: 'contain', // 'contain' or 'cover'
-            bgType: 'blur', // 'blur', 'color', texture, or gradient
+            bgType: 'blur', // 'blur', 'custom', 'color', texture, or gradient
             bgColor: '#111827',
             bgGradientStart: '#4c1d95',
             bgGradientEnd: '#f97316',
@@ -440,6 +455,7 @@
             bgTextureBlur: 0,
             bgTextureBrightness: 1.0,
             bgTextureColor: '#ffffff',
+            bgCustomImageName: '',
             blurVal: 20,
             edgeSoftness: 0,
             zoom: 1.0,
@@ -497,6 +513,11 @@
             makerworldRatio: document.getElementById('makerworld-ratio'),
             bgSettingsPanel: document.getElementById('bgSettingsPanel'),
             bgType: document.getElementById('bgType'),
+            bgCustomImageWrap: document.getElementById('bgCustomImageWrap'),
+            bgCustomImageInput: document.getElementById('bgCustomImageInput'),
+            btnBgCustomImage: document.getElementById('btnBgCustomImage'),
+            btnClearBgCustomImage: document.getElementById('btnClearBgCustomImage'),
+            bgCustomImageName: document.getElementById('bgCustomImageName'),
             bgColorPickerWrap: document.getElementById('bgColorPickerWrap'),
             bgColor: document.getElementById('bgColor'),
             bgGradientWrap: document.getElementById('bgGradientWrap'),
@@ -650,7 +671,15 @@
             DOM.bgType.addEventListener('change', (e) => {
                 state.bgType = e.target.value;
                 updateBgUI();
+                if (state.bgType === 'custom' && !bgCustomImage) {
+                    DOM.bgCustomImageInput.click();
+                }
                 renderAll();
+            });
+            DOM.btnBgCustomImage.addEventListener('click', () => DOM.bgCustomImageInput.click());
+            DOM.btnClearBgCustomImage.addEventListener('click', clearBgCustomImage);
+            DOM.bgCustomImageInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) handleBgCustomImage(e.target.files[0]);
             });
             DOM.bgColor.addEventListener('input', (e) => { state.bgColor = e.target.value; renderAll(); });
             DOM.bgGradientStart.addEventListener('input', (e) => { state.bgGradientStart = e.target.value; renderAll(); });
@@ -747,12 +776,76 @@
             DOM.bgColorPickerWrap.classList.add('hidden');
             DOM.bgGradientWrap.classList.add('hidden');
             DOM.bgTextureWrap.classList.add('hidden');
+            DOM.bgCustomImageWrap.classList.add('hidden');
             DOM.bgBlurWrap.classList.add('hidden');
             
             if (state.bgType === 'color') DOM.bgColorPickerWrap.classList.remove('hidden');
             if (state.bgType === 'gradient') DOM.bgGradientWrap.classList.remove('hidden');
             if (state.bgType === 'texture') DOM.bgTextureWrap.classList.remove('hidden');
+            if (state.bgType === 'custom') {
+                DOM.bgCustomImageWrap.classList.remove('hidden');
+                DOM.bgBlurWrap.classList.remove('hidden');
+                syncBgCustomImageUI();
+            }
             if (state.bgType === 'blur') DOM.bgBlurWrap.classList.remove('hidden');
+        }
+
+        function syncBgCustomImageUI() {
+            const hasImage = Boolean(bgCustomImage);
+            DOM.bgCustomImageName.textContent = hasImage
+                ? state.bgCustomImageName
+                : 'No background image selected';
+            DOM.bgCustomImageName.classList.toggle('text-gray-300', hasImage);
+            DOM.bgCustomImageName.classList.toggle('text-gray-500', !hasImage);
+            DOM.btnClearBgCustomImage.classList.toggle('hidden', !hasImage);
+            DOM.btnBgCustomImage.innerHTML = hasImage
+                ? '<i class="fa-solid fa-image mr-2"></i>Replace background'
+                : '<i class="fa-solid fa-image mr-2"></i>Choose background';
+        }
+
+        function clearBgCustomImage() {
+            bgCustomImage = null;
+            state.bgCustomImageName = '';
+            DOM.bgCustomImageInput.value = '';
+            syncBgCustomImageUI();
+            renderAll();
+        }
+
+        function handleBgCustomImage(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload a valid background image.', false);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    bgCustomImage = img;
+                    state.bgCustomImageName = file.name;
+                    state.bgType = 'custom';
+                    DOM.bgType.value = 'custom';
+                    updateBgUI();
+                    renderAll();
+                    showToast('Custom background loaded.', true);
+                };
+                img.onerror = () => showToast('Could not load background image.', false);
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function drawBlurredCoverBackground(ctx, image, cw, ch) {
+            const iw = image.width;
+            const ih = image.height;
+            const coverScale = Math.max(cw / iw, ch / ih);
+            const bgW = iw * coverScale;
+            const bgH = ih * coverScale;
+            const bgX = (cw - bgW) / 2;
+            const bgY = (ch - bgH) / 2;
+
+            ctx.filter = `blur(${state.blurVal}px) brightness(0.6)`;
+            ctx.drawImage(image, bgX, bgY, bgW, bgH);
+            ctx.filter = 'none';
         }
 
         function resetControls() {
@@ -1243,16 +1336,14 @@
             // Render Background (only visible in 'contain' mode)
             if (state.fitMode === 'contain') {
                 if (state.bgType === 'blur') {
-                    // Create blurred background using the same image scaled to cover
-                    const coverScale = Math.max(cw / iw, ch / ih);
-                    const bgW = iw * coverScale;
-                    const bgH = ih * coverScale;
-                    const bgX = (cw - bgW) / 2;
-                    const bgY = (ch - bgH) / 2;
-
-                    ctx.filter = `blur(${state.blurVal}px) brightness(0.6)`;
-                    ctx.drawImage(sourceImage, bgX, bgY, bgW, bgH);
-                    ctx.filter = 'none'; // reset filter
+                    drawBlurredCoverBackground(ctx, sourceImage, cw, ch);
+                } else if (state.bgType === 'custom') {
+                    if (bgCustomImage) {
+                        drawBlurredCoverBackground(ctx, bgCustomImage, cw, ch);
+                    } else {
+                        ctx.fillStyle = '#111827';
+                        ctx.fillRect(0, 0, cw, ch);
+                    }
                 } else if (state.bgType === 'color') {
                     ctx.fillStyle = state.bgColor;
                     ctx.fillRect(0, 0, cw, ch);
