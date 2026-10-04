@@ -6,7 +6,7 @@ Source: [TechJeeper/LayerLens](https://github.com/TechJeeper/LayerLens)
 
 ## Features
 
-- Multi-image batches with per-image crop memory and roles (hero / gallery / detail)
+- Multi-image batches with per-image crop memory
 - Project name used for ZIP and export filenames
 - Brand kits, logo watermark, safe-margin guides
 - Color/lighting (exposure, contrast, temperature, vignette)

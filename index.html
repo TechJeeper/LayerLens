@@ -253,7 +253,7 @@
             </div>
             <h2 class="text-xl sm:text-2xl font-bold mb-2">Upload your listing photos</h2>
             <p class="text-gray-400 mb-2 text-sm sm:text-base">Drag and drop images here, click to browse, or paste from clipboard.</p>
-            <p class="text-gray-500 mb-6 text-xs sm:text-sm">Select multiple files for a batch. First image becomes the hero by default.</p>
+            <p class="text-gray-500 mb-6 text-xs sm:text-sm">Select multiple files for a batch.</p>
             <div class="text-xs sm:text-sm text-gray-500 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mt-4">
                 <span class="flex items-center justify-center gap-1"><i class="fa-solid fa-check text-green-500"></i> Auto-resizing</span>
                 <span class="flex items-center justify-center gap-1"><i class="fa-solid fa-check text-green-500"></i> Per-image crop memory</span>
@@ -294,15 +294,6 @@
                 <div class="flex justify-between items-center border-b border-gray-800 pb-4">
                     <h3 class="text-lg font-bold"><i class="fa-solid fa-sliders text-teal-400 mr-2"></i> Adjustments</h3>
                     <button id="btnReset" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 transition-colors">Reset</button>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-semibold text-gray-300" for="imageRole">Image role</label>
-                    <select id="imageRole" class="bg-gray-950 border border-gray-700 text-sm rounded focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 text-white outline-none">
-                        <option value="hero">Hero</option>
-                        <option value="gallery">Gallery</option>
-                        <option value="detail">Detail</option>
-                    </select>
                 </div>
 
                 <div id="cropReferencePanel" class="flex flex-col gap-2">
@@ -562,7 +553,7 @@
                 <div class="flex flex-col gap-3 border-t border-gray-800 pt-5">
                     <label class="text-sm font-semibold text-gray-300"><i class="fa-solid fa-list-check text-teal-400 mr-2"></i>Listing checklist</label>
                     <ul id="listingChecklist" class="text-xs text-gray-400 space-y-2 leading-relaxed">
-                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Printables:</strong> Prefer clean 4:3 hero; first gallery shot sells the model.</span></li>
+                        <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Printables:</strong> Prefer a clean 4:3 cover shot that sells the model.</span></li>
                         <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">MakerWorld:</strong> Landscape or portrait 4:3/3:4; keep subject large in frame.</span></li>
                         <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Thangs:</strong> Tall 9:11 crops; avoid tiny subjects.</span></li>
                         <li class="flex gap-2"><i class="fa-solid fa-circle-info text-teal-500 mt-0.5"></i><span><strong class="text-gray-300">Snapmaker:</strong> No promotional text on cover — OCR watches for this.</span></li>
@@ -576,10 +567,6 @@
                         <div class="flex justify-between gap-2">
                             <span class="text-gray-400">Snapmaker OCR</span>
                             <span id="ocrChecklistSummary" class="text-gray-300 font-semibold">Waiting…</span>
-                        </div>
-                        <div class="flex justify-between gap-2">
-                            <span class="text-gray-400">Batch roles</span>
-                            <span id="rolesChecklistSummary" class="text-gray-300 font-semibold">—</span>
                         </div>
                     </div>
                 </div>

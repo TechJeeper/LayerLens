@@ -5,8 +5,6 @@
     const PROJECT_KEY = 'layerlens-project';
     const MIN_TEXT_CONFIDENCE = 75;
     const SAFE_MARGIN_PCT = 0.08;
-    const ROLES = ['hero', 'gallery', 'detail'];
-
     let tesseractWorker = null;
     let textCheckTimeout = null;
     let cultsEstimateTimeout = null;
@@ -53,12 +51,11 @@
         return { zoom: 1.0, panX: 0, panY: 0 };
     }
 
-    function createImageEntry(id, name, dataUrl, role) {
+    function createImageEntry(id, name, dataUrl) {
         return {
             id,
             name,
             dataUrl,
-            role: role || 'gallery',
             image: null,
             zoom: 1.0,
             panX: 0,
@@ -152,11 +149,11 @@
             'projectName', 'projectNameMobile', 'btnSaveProject', 'btnLoadProject',
             'btnExportProjectJson', 'btnImportProjectJson', 'projectJsonInput',
             'btnLoadProjectUpload', 'btnImportProjectJsonUpload', 'btnAddImages', 'btnRemoveImage',
-            'imageRole', 'btnAutoCrop', 'exposureCtrl', 'exposureVal', 'contrastCtrl', 'contrastVal',
+            'btnAutoCrop', 'exposureCtrl', 'exposureVal', 'contrastCtrl', 'contrastVal',
             'temperatureCtrl', 'temperatureVal', 'vignetteCtrl', 'vignetteVal', 'safeMarginToggle',
             'logoInput', 'btnLogoUpload', 'btnClearLogo', 'logoName', 'logoControls', 'logoPosition',
             'logoScale', 'logoScaleVal', 'logoOpacity', 'logoOpacityVal', 'btnSaveBrandKit',
-            'btnApplyBrandKit', 'cultsSizeEstimate', 'ocrChecklistSummary', 'rolesChecklistSummary',
+            'btnApplyBrandKit', 'cultsSizeEstimate', 'ocrChecklistSummary',
             'btnClearProject', 'snapmaker-canvas-wrap'
         ];
         ids.forEach((id) => {
@@ -231,7 +228,6 @@
         DOM.btnImportProjectJsonUpload = document.getElementById('btnImportProjectJsonUpload');
         DOM.btnAddImages = document.getElementById('btnAddImages');
         DOM.btnRemoveImage = document.getElementById('btnRemoveImage');
-        DOM.imageRole = document.getElementById('imageRole');
         DOM.btnAutoCrop = document.getElementById('btnAutoCrop');
         DOM.exposureCtrl = document.getElementById('exposureCtrl');
         DOM.exposureVal = document.getElementById('exposureVal');
@@ -256,7 +252,6 @@
         DOM.btnApplyBrandKit = document.getElementById('btnApplyBrandKit');
         DOM.cultsSizeEstimate = document.getElementById('cultsSizeEstimate');
         DOM.ocrChecklistSummary = document.getElementById('ocrChecklistSummary');
-        DOM.rolesChecklistSummary = document.getElementById('rolesChecklistSummary');
         DOM.btnClearProject = document.getElementById('btnClearProject');
         DOM.snapmakerCanvasWrap = document.getElementById('snapmaker-canvas-wrap');
     }
@@ -471,14 +466,6 @@
         DOM.btnRemoveImage.addEventListener('click', removeActiveImage);
         DOM.btnDownloadHeader.addEventListener('click', generateZip);
         DOM.btnClearProject.addEventListener('click', clearProject);
-
-        DOM.imageRole.addEventListener('change', (e) => {
-            const active = getActiveImage();
-            if (!active) return;
-            active.role = e.target.value;
-            renderFilmstrip();
-            updateChecklist();
-        });
 
         DOM.btnAutoCrop.addEventListener('click', autoCropSubject);
 
@@ -775,7 +762,6 @@
     function syncActiveControlsToDom() {
         const active = getActiveImage();
         if (!active) return;
-        DOM.imageRole.value = active.role;
         DOM.zoomCtrl.value = active.zoom;
         DOM.zoomValDisplay.textContent = `${active.zoom.toFixed(2)}x`;
         DOM.panXCtrl.value = active.panX;
@@ -993,8 +979,7 @@
             try {
                 const dataUrl = await fileToDataUrl(file);
                 const image = await loadHtmlImage(dataUrl);
-                const role = (!append && state.images.length === 0 && i === 0) ? 'hero' : 'gallery';
-                const entry = createImageEntry(uid(), file.name || `image-${state.images.length + 1}`, dataUrl, role);
+                const entry = createImageEntry(uid(), file.name || `image-${state.images.length + 1}`, dataUrl);
                 entry.image = image;
                 state.images.push(entry);
                 if (!firstNewId) firstNewId = entry.id;
@@ -1041,10 +1026,10 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = `filmstrip-item relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-700 bg-black ${entry.id === state.activeImageId ? 'active' : ''}`;
-            btn.title = `${index + 1}. ${entry.name} (${entry.role})`;
+            btn.title = `${index + 1}. ${entry.name}`;
             btn.innerHTML = `
                 <img src="${entry.dataUrl}" alt="" class="w-full h-full object-cover">
-                <span class="absolute bottom-0 left-0 right-0 bg-black/70 text-[10px] text-center text-gray-200 py-0.5 capitalize">${entry.role}</span>
+                <span class="absolute bottom-0 left-0 right-0 bg-black/70 text-[10px] text-center text-gray-200 py-0.5">${index + 1}</span>
             `;
             btn.addEventListener('click', () => setActiveImage(entry.id));
             DOM.filmstrip.appendChild(btn);
@@ -1089,13 +1074,6 @@
     }
 
     function updateChecklist() {
-        const counts = { hero: 0, gallery: 0, detail: 0 };
-        state.images.forEach((img) => {
-            if (counts[img.role] !== undefined) counts[img.role] += 1;
-        });
-        if (DOM.rolesChecklistSummary) {
-            DOM.rolesChecklistSummary.textContent = `H${counts.hero} · G${counts.gallery} · D${counts.detail}`;
-        }
         if (DOM.ocrChecklistSummary) DOM.ocrChecklistSummary.textContent = lastOcrSummary;
         if (DOM.cultsSizeEstimate) DOM.cultsSizeEstimate.textContent = cultsSizeText;
     }
@@ -1770,8 +1748,7 @@
 
     function exportFileName(imageEntry, index, platform, width, height) {
         const nn = String(index + 1).padStart(2, '0');
-        const role = ROLES.includes(imageEntry.role) ? imageEntry.role : 'gallery';
-        return `${slugify(state.projectName)}_${nn}-${role}_${platform.name}_${width}x${height}.jpg`;
+        return `${slugify(state.projectName)}_${nn}_${platform.name}_${width}x${height}.jpg`;
     }
 
     async function generateZip() {
@@ -1841,7 +1818,6 @@
                 id: img.id,
                 name: img.name,
                 dataUrl: img.dataUrl,
-                role: img.role,
                 zoom: img.zoom,
                 panX: img.panX,
                 panY: img.panY,
@@ -1903,7 +1879,7 @@
         const loaded = [];
         for (const raw of data.images) {
             if (!raw || !raw.dataUrl) continue;
-            const entry = createImageEntry(raw.id || uid(), raw.name || 'image', raw.dataUrl, raw.role || 'gallery');
+            const entry = createImageEntry(raw.id || uid(), raw.name || 'image', raw.dataUrl);
             entry.zoom = raw.zoom ?? 1;
             entry.panX = raw.panX ?? 0;
             entry.panY = raw.panY ?? 0;
