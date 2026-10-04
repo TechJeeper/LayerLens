@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LayerLens | 3D Model Photo Optimizer</title>
-    <meta name="description" content="Prepare one 3D model photo for Printables, MakerWorld, Thangs, and Snapmaker Spaces with crop, resize, background, and text-detection tools.">
-    <meta name="keywords" content="3D model photos, Printables, MakerWorld, Thangs, Snapmaker Spaces, image cropper, photo optimizer">
+    <meta name="description" content="Prepare one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D with crop, resize, background, and text-detection tools.">
+    <meta name="keywords" content="3D model photos, Printables, MakerWorld, Thangs, Snapmaker Spaces, Cults3D, image cropper, photo optimizer">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#030712">
     <meta property="og:type" content="website">
     <meta property="og:title" content="LayerLens | 3D Model Photo Optimizer">
-    <meta property="og:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, and Snapmaker Spaces.">
+    <meta property="og:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="LayerLens | 3D Model Photo Optimizer">
-    <meta name="twitter:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, and Snapmaker Spaces.">
+    <meta name="twitter:description" content="Optimize one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -40,7 +40,8 @@
                             makerworld: '#0f766e',
                             thangs: '#7c3aed',
                             printables: '#c2410c',
-                            snapmaker: '#0891b2'
+                            snapmaker: '#0891b2',
+                            cults3d: '#db2777'
                         }
                     }
                 }
@@ -54,7 +55,7 @@
             "name": "LayerLens",
             "applicationCategory": "MultimediaApplication",
             "operatingSystem": "Any",
-            "description": "A browser-based tool for preparing 3D model photos for Printables, MakerWorld, Thangs, and Snapmaker Spaces."
+            "description": "A browser-based tool for preparing 3D model photos for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D."
         }
     </script>
     <style>
@@ -112,7 +113,7 @@
         <section class="w-full max-w-4xl text-center pt-8 pb-10 sm:pt-14 sm:pb-12">
             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-teal-400 mb-4">One photo, every platform</p>
             <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white">Perfect your 3D model photos for every listing.</h1>
-            <p class="max-w-2xl mx-auto mt-5 text-base sm:text-lg leading-relaxed text-gray-400">Upload a single image and create platform-ready versions for Printables, MakerWorld, Thangs, and Snapmaker Spaces. Crop, resize, adjust the background, and download every export in one ZIP.</p>
+            <p class="max-w-2xl mx-auto mt-5 text-base sm:text-lg leading-relaxed text-gray-400">Upload a single image and create platform-ready versions for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D. Crop, resize, adjust the background, and download every export in one ZIP.</p>
             <div class="mt-7 flex flex-wrap justify-center gap-3 text-sm text-gray-300">
                 <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-crop-simple text-teal-400 mr-2"></i>Smart crop &amp; fit</span>
                 <span class="rounded-full border border-gray-700 bg-gray-900 px-3 py-1.5"><i class="fa-solid fa-wand-magic-sparkles text-teal-400 mr-2"></i>Custom backgrounds</span>
@@ -147,7 +148,7 @@
                     <button id="btnReset" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 transition-colors">Reset</button>
                 </div>
 
-                <div class="flex flex-col gap-2">
+                <div id="cropReferencePanel" class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
                         <label class="text-sm font-semibold text-gray-300" for="canvas-reference">Crop reference</label>
                         <span class="text-xs text-gray-500">Drag to reposition (snaps near center)</span>
@@ -260,7 +261,7 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-5 border-t border-gray-800 pt-5">
+                <div id="globalTransformPanel" class="flex flex-col gap-5 border-t border-gray-800 pt-5">
                     <label class="text-sm font-semibold text-gray-300">Transform Image</label>
                     
                     <div class="flex flex-col gap-1">
@@ -286,6 +287,11 @@
                     </div>
                 </div>
 
+                <div id="coverModeHint" class="hidden border-t border-gray-800 pt-5 text-sm text-gray-400 leading-relaxed">
+                    <p class="font-semibold text-gray-300 mb-1"><i class="fa-solid fa-crop text-teal-400 mr-2"></i>Per-platform crop</p>
+                    <p>Cover mode is on. Use each service card to zoom, drag to re-focus, and pan that export independently.</p>
+                </div>
+
                 <div class="mt-auto pt-6">
                     <button id="btnUploadNew" data-goatcounter-click="upload-new-image" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-2 rounded-lg text-sm transition-colors mb-2">
                         <i class="fa-solid fa-image mr-2"></i> Choose Different Image
@@ -296,7 +302,7 @@
             <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 pb-10">
                 
                 <!-- Printables Card -->
-                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit">
+                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="printables">
                     <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-brand-printables"></div>
@@ -305,12 +311,13 @@
                         <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">4:3 landscape</span>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
-                        <canvas id="canvas-printables" class="max-w-full h-auto rounded shadow-md w-full aspect-[4/3] bg-black"></canvas>
+                        <canvas id="canvas-printables" data-platform-canvas="printables" class="max-w-full h-auto rounded shadow-md w-full aspect-[4/3] bg-black touch-none"></canvas>
                     </div>
+                    <div class="platform-crop-controls hidden border-t border-gray-800 p-4 bg-gray-850/60 flex flex-col gap-3" data-platform-controls="printables"></div>
                 </div>
 
                 <!-- MakerWorld Card -->
-                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit">
+                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="makerworld">
                     <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-brand-makerworld"></div>
@@ -325,12 +332,13 @@
                         </div>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
-                        <canvas id="canvas-makerworld" class="max-w-full h-auto rounded shadow-md w-full aspect-[4/3] bg-black"></canvas>
+                        <canvas id="canvas-makerworld" data-platform-canvas="makerworld" class="max-w-full h-auto rounded shadow-md w-full aspect-[4/3] bg-black touch-none"></canvas>
                     </div>
+                    <div class="platform-crop-controls hidden border-t border-gray-800 p-4 bg-gray-850/60 flex flex-col gap-3" data-platform-controls="makerworld"></div>
                 </div>
 
                 <!-- Thangs Card -->
-                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit">
+                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="thangs">
                     <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-brand-thangs"></div>
@@ -339,12 +347,13 @@
                         <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">9:11 portrait</span>
                     </div>
                     <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
-                        <canvas id="canvas-thangs" class="max-w-full h-auto rounded shadow-md w-full aspect-[9/11] bg-black"></canvas>
+                        <canvas id="canvas-thangs" data-platform-canvas="thangs" class="max-w-full h-auto rounded shadow-md w-full aspect-[9/11] bg-black touch-none"></canvas>
                     </div>
+                    <div class="platform-crop-controls hidden border-t border-gray-800 p-4 bg-gray-850/60 flex flex-col gap-3" data-platform-controls="thangs"></div>
                 </div>
 
                 <!-- Snapmaker Spaces Card -->
-                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col relative border-b-4 border-b-gray-800 h-fit" id="snapmaker-card">
+                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col relative border-b-4 border-b-gray-800 h-fit" id="snapmaker-card" data-platform-card="snapmaker">
                     <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850">
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-brand-snapmaker"></div>
@@ -353,15 +362,32 @@
                         <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">16:9 landscape</span>
                     </div>
                     
-                    <div class="p-4 pb-12 flex-grow flex items-center justify-center bg-gray-950 relative">
-                        <canvas id="canvas-snapmaker" class="max-w-full h-auto rounded shadow-md w-full aspect-[16/9] bg-black"></canvas>
+                    <div class="p-4 pb-12 flex-grow flex items-center justify-center bg-gray-950 relative" id="snapmaker-canvas-wrap">
+                        <canvas id="canvas-snapmaker" data-platform-canvas="snapmaker" class="max-w-full h-auto rounded shadow-md w-full aspect-[16/9] bg-black touch-none"></canvas>
                     </div>
+
+                    <div class="platform-crop-controls hidden border-t border-gray-800 p-4 pb-14 bg-gray-850/60 flex flex-col gap-3" data-platform-controls="snapmaker"></div>
 
                     <!-- Text Detection Status Bar -->
                     <div id="snapmaker-status" class="absolute bottom-0 left-0 w-full p-2 text-xs font-semibold flex items-center justify-center gap-2 bg-gray-800 text-gray-300 transition-colors h-10">
                         <div class="spinner border-gray-400 border-l-white"></div>
                         Scanning for text...
                     </div>
+                </div>
+
+                <!-- Cults3D Card -->
+                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg flex flex-col h-fit" data-platform-card="cults3d">
+                    <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850 gap-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-brand-cults3d"></div>
+                            <span class="font-bold">Cults3D</span>
+                        </div>
+                        <span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300 text-right">1:1 · max 8000×8000 · 10 MB</span>
+                    </div>
+                    <div class="p-4 flex-grow flex items-center justify-center bg-gray-950">
+                        <canvas id="canvas-cults3d" data-platform-canvas="cults3d" class="max-w-full h-auto rounded shadow-md w-full aspect-square bg-black touch-none"></canvas>
+                    </div>
+                    <div class="platform-crop-controls hidden border-t border-gray-800 p-4 bg-gray-850/60 flex flex-col gap-3" data-platform-controls="cults3d"></div>
                 </div>
 
             </div>
@@ -419,8 +445,32 @@
             zoom: 1.0,
             panX: 0,
             panY: 0,
-            makerworldOrientation: 'landscape'
+            makerworldOrientation: 'landscape',
+            // Per-service crop transforms used in Cover (Crop) mode
+            platformTransforms: {}
         };
+
+        function defaultTransform() {
+            return { zoom: 1.0, panX: 0, panY: 0 };
+        }
+
+        function ensurePlatformTransform(platformId) {
+            if (!state.platformTransforms[platformId]) {
+                state.platformTransforms[platformId] = defaultTransform();
+            }
+            return state.platformTransforms[platformId];
+        }
+
+        function getTransformForPlatform(platformId) {
+            if (state.fitMode === 'cover' && platformId) {
+                return ensurePlatformTransform(platformId);
+            }
+            return { zoom: state.zoom, panX: state.panX, panY: state.panY };
+        }
+
+        function getPlatformIds() {
+            return getPlatforms().map((platform) => platform.id);
+        }
 
         // Platform configurations (High-Res export dimensions required by platforms)
         function getPlatforms() {
@@ -429,7 +479,9 @@
             { id: 'printables', name: 'Printables', width: 1920, height: 1440 },
             { id: 'makerworld', name: `MakerWorld_${state.makerworldOrientation}`, width: makerworldPortrait ? 1440 : 1920, height: makerworldPortrait ? 1920 : 1440 },
             { id: 'thangs', name: 'Thangs', width: 900, height: 1100 },
-            { id: 'snapmaker', name: 'SnapmakerSpaces', width: 1920, height: 1080, checkText: true }
+            { id: 'snapmaker', name: 'SnapmakerSpaces', width: 1920, height: 1080, checkText: true },
+            // Cults3D: 1:1 export at max 8000×8000 / 10 MB
+            { id: 'cults3d', name: 'Cults3D', width: 8000, height: 8000, previewWidth: 1200, previewHeight: 1200, maxBytes: 10 * 1024 * 1024 }
             ];
         }
 
@@ -469,6 +521,9 @@
             zoomValDisplay: document.getElementById('zoomVal'),
             panXCtrl: document.getElementById('panXCtrl'),
             panYCtrl: document.getElementById('panYCtrl'),
+            cropReferencePanel: document.getElementById('cropReferencePanel'),
+            globalTransformPanel: document.getElementById('globalTransformPanel'),
+            coverModeHint: document.getElementById('coverModeHint'),
             referenceCanvas: document.getElementById('canvas-reference'),
             btnReset: document.getElementById('btnReset'),
             btnUploadNew: document.getElementById('btnUploadNew'),
@@ -481,7 +536,9 @@
         };
 
         async function init() {
+            setupPlatformCropControls();
             setupEventListeners();
+            updateCropModeUI();
             // Initialize Tesseract Worker in background as soon as page loads
             try {
                 tesseractWorker = await Tesseract.createWorker('eng');
@@ -489,6 +546,76 @@
             } catch(e) {
                 console.error("Failed to load Tesseract OCR Engine", e);
                 showToast("Failed to load OCR engine. Text detection may be unavailable.", false);
+            }
+        }
+
+        function platformCropControlsHtml(platformId) {
+            return `
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-xs text-gray-400">Drag image to re-focus · zoom &amp; pan to crop</p>
+                    <button type="button" data-platform-reset="${platformId}" class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded text-gray-300 transition-colors shrink-0">Reset crop</button>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <label for="zoom-${platformId}">Zoom</label>
+                        <span data-platform-zoom-val="${platformId}">1.00x</span>
+                    </div>
+                    <input type="range" id="zoom-${platformId}" data-platform-zoom="${platformId}" min="0.5" max="3" step="0.05" value="1" class="w-full">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label for="panx-${platformId}" class="text-xs text-gray-400">Pan X</label>
+                        <input type="range" id="panx-${platformId}" data-platform-pan-x="${platformId}" min="-100" max="100" value="0" class="w-full">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label for="pany-${platformId}" class="text-xs text-gray-400">Pan Y</label>
+                        <input type="range" id="pany-${platformId}" data-platform-pan-y="${platformId}" min="-100" max="100" value="0" class="w-full">
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupPlatformCropControls() {
+            document.querySelectorAll('[data-platform-controls]').forEach((panel) => {
+                const platformId = panel.getAttribute('data-platform-controls');
+                panel.innerHTML = platformCropControlsHtml(platformId);
+                ensurePlatformTransform(platformId);
+                syncPlatformCropControls(platformId);
+            });
+        }
+
+        function syncPlatformCropControls(platformId) {
+            const transform = ensurePlatformTransform(platformId);
+            const zoomCtrl = document.querySelector(`[data-platform-zoom="${platformId}"]`);
+            const zoomVal = document.querySelector(`[data-platform-zoom-val="${platformId}"]`);
+            const panXCtrl = document.querySelector(`[data-platform-pan-x="${platformId}"]`);
+            const panYCtrl = document.querySelector(`[data-platform-pan-y="${platformId}"]`);
+            if (!zoomCtrl || !panXCtrl || !panYCtrl) return;
+            zoomCtrl.value = transform.zoom;
+            if (zoomVal) zoomVal.textContent = transform.zoom.toFixed(2) + 'x';
+            panXCtrl.value = transform.panX;
+            panYCtrl.value = transform.panY;
+        }
+
+        function updateCropModeUI() {
+            const isCover = state.fitMode === 'cover';
+            DOM.cropReferencePanel.classList.toggle('hidden', isCover);
+            DOM.globalTransformPanel.classList.toggle('hidden', isCover);
+            DOM.coverModeHint.classList.toggle('hidden', !isCover);
+            document.querySelectorAll('.platform-crop-controls').forEach((panel) => {
+                panel.classList.toggle('hidden', !isCover);
+            });
+            document.querySelectorAll('[data-platform-canvas]').forEach((canvas) => {
+                canvas.classList.toggle('cursor-grab', isCover);
+                if (!isCover) {
+                    canvas.classList.remove('cursor-grabbing');
+                }
+            });
+            const snapmakerWrap = document.getElementById('snapmaker-canvas-wrap');
+            if (snapmakerWrap) {
+                // Status bar clears canvas padding in contain; in cover it clears the crop panel instead
+                snapmakerWrap.classList.toggle('pb-12', !isCover);
+                snapmakerWrap.classList.toggle('pb-4', isCover);
             }
         }
 
@@ -568,6 +695,7 @@
             DOM.panXCtrl.addEventListener('input', (e) => { state.panX = parseInt(e.target.value); renderAll(); });
             DOM.panYCtrl.addEventListener('input', (e) => { state.panY = parseInt(e.target.value); renderAll(); });
             setupReferenceDrag();
+            setupPlatformCropInteractions();
 
             DOM.btnReset.addEventListener('click', resetControls);
             DOM.btnUploadNew.addEventListener('click', () => {
@@ -591,7 +719,12 @@
                 DOM.btnFitContain.classList.remove('bg-teal-700', 'text-white', 'shadow');
                 DOM.btnFitContain.classList.add('text-gray-400', 'hover:text-white');
                 DOM.bgSettingsPanel.style.display = 'none';
+                getPlatformIds().forEach((platformId) => {
+                    ensurePlatformTransform(platformId);
+                    syncPlatformCropControls(platformId);
+                });
             }
+            updateCropModeUI();
             renderAll();
         }
 
@@ -626,6 +759,7 @@
             state.zoom = 1.0;
             state.panX = 0;
             state.panY = 0;
+            state.platformTransforms = {};
             state.bgTextureBlur = 0;
             state.bgTextureBrightness = 1.0;
             state.bgTextureColor = '#ffffff';
@@ -634,6 +768,10 @@
             
             DOM.zoomCtrl.value = 1; DOM.zoomValDisplay.textContent = '1.0x';
             syncPanControls();
+            getPlatformIds().forEach((platformId) => {
+                ensurePlatformTransform(platformId);
+                syncPlatformCropControls(platformId);
+            });
             DOM.bgTextureBlur.value = 0; DOM.textureBlurValDisplay.textContent = '0px';
             DOM.bgTextureBrightness.value = 1; DOM.textureBrightnessValDisplay.textContent = '1.0x';
             DOM.bgTextureColor.value = '#ffffff';
@@ -648,7 +786,7 @@
             const centerSnapThreshold = 2;
 
             DOM.referenceCanvas.addEventListener('pointerdown', (event) => {
-                if (!sourceImage) return;
+                if (!sourceImage || state.fitMode === 'cover') return;
                 dragStart = { x: event.clientX, y: event.clientY, panX: state.panX, panY: state.panY };
                 DOM.referenceCanvas.setPointerCapture(event.pointerId);
                 DOM.referenceCanvas.classList.replace('cursor-grab', 'cursor-grabbing');
@@ -659,7 +797,7 @@
                 const rect = DOM.referenceCanvas.getBoundingClientRect();
                 const canvasDeltaX = (event.clientX - dragStart.x) * (DOM.referenceCanvas.width / rect.width);
                 const canvasDeltaY = (event.clientY - dragStart.y) * (DOM.referenceCanvas.height / rect.height);
-                const scale = getImageScale(DOM.referenceCanvas.width, DOM.referenceCanvas.height);
+                const scale = getImageScale(DOM.referenceCanvas.width, DOM.referenceCanvas.height, state.zoom);
 
                 const panX = Math.max(-100, Math.min(100, dragStart.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
                 const panY = Math.max(-100, Math.min(100, dragStart.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
@@ -675,6 +813,92 @@
             };
             DOM.referenceCanvas.addEventListener('pointerup', finishDrag);
             DOM.referenceCanvas.addEventListener('pointercancel', finishDrag);
+        }
+
+        function setupPlatformCropInteractions() {
+            const centerSnapThreshold = 2;
+            const dragState = { platformId: null, start: null };
+
+            document.querySelectorAll('[data-platform-canvas]').forEach((canvas) => {
+                const platformId = canvas.getAttribute('data-platform-canvas');
+
+                canvas.addEventListener('pointerdown', (event) => {
+                    if (!sourceImage || state.fitMode !== 'cover') return;
+                    const transform = ensurePlatformTransform(platformId);
+                    dragState.platformId = platformId;
+                    dragState.start = {
+                        x: event.clientX,
+                        y: event.clientY,
+                        panX: transform.panX,
+                        panY: transform.panY
+                    };
+                    canvas.setPointerCapture(event.pointerId);
+                    canvas.classList.replace('cursor-grab', 'cursor-grabbing');
+                });
+
+                canvas.addEventListener('pointermove', (event) => {
+                    if (!dragState.start || dragState.platformId !== platformId) return;
+                    const transform = ensurePlatformTransform(platformId);
+                    const rect = canvas.getBoundingClientRect();
+                    const canvasDeltaX = (event.clientX - dragState.start.x) * (canvas.width / rect.width);
+                    const canvasDeltaY = (event.clientY - dragState.start.y) * (canvas.height / rect.height);
+                    const scale = getImageScale(canvas.width, canvas.height, transform.zoom);
+                    const panX = Math.max(-100, Math.min(100, dragState.start.panX + (canvasDeltaX * 200 / (sourceImage.width * scale))));
+                    const panY = Math.max(-100, Math.min(100, dragState.start.panY + (canvasDeltaY * 200 / (sourceImage.height * scale))));
+                    transform.panX = Math.abs(panX) < centerSnapThreshold ? 0 : panX;
+                    transform.panY = Math.abs(panY) < centerSnapThreshold ? 0 : panY;
+                    syncPlatformCropControls(platformId);
+                    renderPlatform(platformId);
+                });
+
+                const finishDrag = () => {
+                    if (dragState.platformId === platformId) {
+                        dragState.platformId = null;
+                        dragState.start = null;
+                    }
+                    if (state.fitMode === 'cover') {
+                        canvas.classList.replace('cursor-grabbing', 'cursor-grab');
+                    }
+                };
+                canvas.addEventListener('pointerup', finishDrag);
+                canvas.addEventListener('pointercancel', finishDrag);
+            });
+
+            document.querySelectorAll('[data-platform-zoom]').forEach((input) => {
+                input.addEventListener('input', (event) => {
+                    const platformId = event.target.getAttribute('data-platform-zoom');
+                    const transform = ensurePlatformTransform(platformId);
+                    transform.zoom = parseFloat(event.target.value);
+                    const zoomVal = document.querySelector(`[data-platform-zoom-val="${platformId}"]`);
+                    if (zoomVal) zoomVal.textContent = transform.zoom.toFixed(2) + 'x';
+                    renderPlatform(platformId);
+                });
+            });
+
+            document.querySelectorAll('[data-platform-pan-x]').forEach((input) => {
+                input.addEventListener('input', (event) => {
+                    const platformId = event.target.getAttribute('data-platform-pan-x');
+                    ensurePlatformTransform(platformId).panX = parseInt(event.target.value, 10);
+                    renderPlatform(platformId);
+                });
+            });
+
+            document.querySelectorAll('[data-platform-pan-y]').forEach((input) => {
+                input.addEventListener('input', (event) => {
+                    const platformId = event.target.getAttribute('data-platform-pan-y');
+                    ensurePlatformTransform(platformId).panY = parseInt(event.target.value, 10);
+                    renderPlatform(platformId);
+                });
+            });
+
+            document.querySelectorAll('[data-platform-reset]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    const platformId = event.currentTarget.getAttribute('data-platform-reset');
+                    state.platformTransforms[platformId] = defaultTransform();
+                    syncPlatformCropControls(platformId);
+                    renderPlatform(platformId);
+                });
+            });
         }
 
         function syncPanControls() {
@@ -712,21 +936,75 @@
             reader.readAsDataURL(file);
         }
 
+        function renderPlatform(platformId) {
+            if (!sourceImage) return;
+            const platform = getPlatforms().find((item) => item.id === platformId);
+            if (!platform) return;
+            const canvas = document.getElementById(`canvas-${platform.id}`);
+            if (!canvas) return;
+            const previewW = platform.previewWidth || platform.width;
+            const previewH = platform.previewHeight || platform.height;
+            renderCanvas(canvas, previewW, previewH, getTransformForPlatform(platform.id));
+            if (platform.checkText) {
+                triggerTextCheck(canvas);
+            }
+        }
+
         function renderAll() {
             if (!sourceImage) return;
 
-            renderCanvas(DOM.referenceCanvas, 800, 600);
+            if (state.fitMode === 'contain') {
+                renderCanvas(DOM.referenceCanvas, 800, 600, getTransformForPlatform(null));
+            }
 
             // Iterate over each target platform and render its canvas
             getPlatforms().forEach(platform => {
-                const canvas = document.getElementById(`canvas-${platform.id}`);
-                renderCanvas(canvas, platform.width, platform.height);
-                
-                // If the platform requires text checking (e.g. Snapmaker Spaces)
-                if (platform.checkText) {
-                    triggerTextCheck(canvas);
-                }
+                renderPlatform(platform.id);
             });
+        }
+
+        function canvasToJpegBlob(canvas, quality) {
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+            });
+        }
+
+        // Export at platform size; for maxBytes platforms, lower quality then scale down if needed
+        async function exportPlatformBlob(platform) {
+            const exportCanvas = document.createElement('canvas');
+            let width = platform.width;
+            let height = platform.height;
+            const transform = getTransformForPlatform(platform.id);
+            renderCanvas(exportCanvas, width, height, transform);
+
+            let quality = 0.95;
+            let blob = await canvasToJpegBlob(exportCanvas, quality);
+
+            if (!platform.maxBytes) {
+                return { blob, width, height };
+            }
+
+            while (blob && blob.size > platform.maxBytes && quality > 0.55) {
+                quality = Math.round((quality - 0.05) * 100) / 100;
+                blob = await canvasToJpegBlob(exportCanvas, quality);
+            }
+
+            while (blob && blob.size > platform.maxBytes && width > 800) {
+                width = Math.round(width * 0.85);
+                height = Math.round(height * 0.85);
+                // Stay within Cults3D maximum pixel dimensions
+                width = Math.min(width, 8000);
+                height = Math.min(height, 8000);
+                renderCanvas(exportCanvas, width, height, transform);
+                quality = 0.9;
+                blob = await canvasToJpegBlob(exportCanvas, quality);
+                while (blob && blob.size > platform.maxBytes && quality > 0.55) {
+                    quality = Math.round((quality - 0.05) * 100) / 100;
+                    blob = await canvasToJpegBlob(exportCanvas, quality);
+                }
+            }
+
+            return { blob, width, height };
         }
 
         function getTexturePattern(ctx, type) {
@@ -935,11 +1213,12 @@
             return gradient;
         }
 
-        function renderCanvas(canvas, targetWidth, targetHeight) {
+        function renderCanvas(canvas, targetWidth, targetHeight, transform) {
             // High-res internal rendering
             canvas.width = targetWidth;
             canvas.height = targetHeight;
             const ctx = canvas.getContext('2d');
+            const activeTransform = transform || { zoom: state.zoom, panX: state.panX, panY: state.panY };
             
             const iw = sourceImage.width;
             const ih = sourceImage.height;
@@ -949,14 +1228,14 @@
             ctx.clearRect(0, 0, cw, ch);
 
             // Calculate scale based on chosen fit mode
-            const scale = getImageScale(cw, ch);
+            const scale = getImageScale(cw, ch, activeTransform.zoom);
 
             const scaledW = iw * scale;
             const scaledH = ih * scale;
 
             // Apply manual pan offsets (-100 to 100 range)
-            const offsetX = (scaledW * (state.panX / 200));
-            const offsetY = (scaledH * (state.panY / 200));
+            const offsetX = (scaledW * (activeTransform.panX / 200));
+            const offsetY = (scaledH * (activeTransform.panY / 200));
 
             const x = (cw - scaledW) / 2 + offsetX;
             const y = (ch - scaledH) / 2 + offsetY;
@@ -1028,11 +1307,11 @@
             }
         }
 
-        function getImageScale(canvasWidth, canvasHeight) {
+        function getImageScale(canvasWidth, canvasHeight, zoom = state.zoom) {
             const baseScale = state.fitMode === 'contain'
                 ? Math.min(canvasWidth / sourceImage.width, canvasHeight / sourceImage.height)
                 : Math.max(canvasWidth / sourceImage.width, canvasHeight / sourceImage.height);
-            return baseScale * state.zoom;
+            return baseScale * zoom;
         }
 
         function triggerTextCheck(sourceCanvas) {
@@ -1099,16 +1378,10 @@
             try {
                 const zip = new JSZip();
                 
-                // Convert each canvas to a blob and add to zip
-                const promises = getPlatforms().map(platform => {
-                    return new Promise((resolve) => {
-                        const canvas = document.getElementById(`canvas-${platform.id}`);
-                        // Export as High quality JPEG
-                        canvas.toBlob((blob) => {
-                            zip.file(`${platform.name}_${platform.width}x${platform.height}.jpg`, blob);
-                            resolve();
-                        }, 'image/jpeg', 0.95);
-                    });
+                // Convert each platform export to a JPEG blob and add to zip
+                const promises = getPlatforms().map(async (platform) => {
+                    const { blob, width, height } = await exportPlatformBlob(platform);
+                    zip.file(`${platform.name}_${width}x${height}.jpg`, blob);
                 });
 
                 await Promise.all(promises);
