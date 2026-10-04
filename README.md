@@ -1,6 +1,8 @@
 # LayerLens
 
-Local copy of [TechJeeper/LayerLens](https://github.com/TechJeeper/LayerLens) — a 3D model photo optimizer for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D (max 8000×8000, 10 MB).
+[LayerLens](https://layerlens.techjeeper.com/) — a 3D model photo optimizer for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D (max 8000×8000, 10 MB).
+
+Source: [TechJeeper/LayerLens](https://github.com/TechJeeper/LayerLens)
 
 ## Run locally
 

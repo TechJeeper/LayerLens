@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://layerlens.techjeeper.com/sitemap.xml

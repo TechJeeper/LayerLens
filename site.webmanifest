@@ -1,0 +1,25 @@
+{
+  "name": "LayerLens",
+  "short_name": "LayerLens",
+  "description": "Prepare one 3D model photo for Printables, MakerWorld, Thangs, Snapmaker Spaces, and Cults3D.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
